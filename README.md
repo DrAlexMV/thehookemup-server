@@ -1,2 +1,2 @@
-thehookemup-server
+thehookemup-client
 ==================

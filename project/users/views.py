@@ -39,7 +39,7 @@ def login():
        req = request.json
        request_email = req['email']
        request_password = req['password']
-       entry = models.collectionUsers.User.find_one({'email':request_email})
+       entry = models.Users.User.find_one({'email':request_email})
        print request_email
        if entry != None:
            if bcrypt.check_password_hash(entry['password'],request_password):
@@ -89,7 +89,7 @@ def signup():
        request_email = req['email']
        request_password = req['password']
        request_name = req['name']
-       entry = models.collectionUsers.User.find_one({'email':request_email})
+       entry = models.Users.User.find_one({'email':request_email})
        if entry == None:
            user = models.createUser(request_name, request_email, request_password)
            user.save()
@@ -105,5 +105,19 @@ def signup():
 
 @users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET', 'POST'])
 def logout():
+    logout_user()
+    return jsonify(LoggedIn=False, errors=None)
+
+
+####################################################
+####################################################
+
+#UserBasicInfo: /api/user/{userid}/
+#UserDetails: /api/user/{userid}/details/
+#UserEdges: /api/user/{userid}/edges/
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/{userid}', methods=['GET'])
+def getUserBasicInfo():
+    http_get_name = request.args.get('email', 'Anonymous')
     logout_user()
     return jsonify(LoggedIn=False, errors=None)

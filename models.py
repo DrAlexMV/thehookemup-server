@@ -5,7 +5,7 @@ import datetime
 
 
 connection = Connection()
-collectionUsers = connection['collectionUsers']
+Users = connection['thehookemup'].Users
 
 
 
@@ -20,8 +20,8 @@ def max_length(length):
 
 @connection.register
 class User(Document):
-    __collection__ = 'collectionJobs'
-    __database__ = 'mydb'
+    __collection__ = 'Users'
+    __database__ = 'thehookemup'
     structure = {
         'name': basestring,
         'email': basestring,
@@ -66,15 +66,28 @@ class User(Document):
         return '<User %r>' % (self.name)
 
 def createUser(name, email, password):
-    user = collectionUsers.User()
+    user = Users.User()
     user['name']=name
     user['email']=email
     user['password']= bcrypt.generate_password_hash(password)
     return user
 
 def addJob(user, companyName, startDate, description, currentlyWorking):
-    Job = collection
-    user['jobs'].append
+    job = {
+        'company':companyName,
+        'startDate':startDate,
+        'description':description,
+        'currentlyWorking':currentlyWorking
+    }
+    user['jobs'].append(job)
+
+
+def addDetail(user, title, content):
+    detail = {
+        'title':title,
+        'content':content
+    }
+    user.details.append(detail)
 
 
 

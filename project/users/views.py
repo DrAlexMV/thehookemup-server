@@ -1,13 +1,27 @@
 from flask import redirect, render_template, request, \
-    url_for, Blueprint, request, jsonify
+    url_for, Blueprint, request, jsonify, session
 from flask.ext.login import login_user, login_required, logout_user
 from project import bcrypt, ROUTE_PREPEND
 import models
+from flask_oauth import OAuth
 
+FACEBOOK_APP_ID = '188477911223606'
+FACEBOOK_APP_SECRET = '621413ddea2bcc5b2e83d42fc40495de'
+oauth = OAuth()
 
 users_blueprint = Blueprint(
     'users', __name__,
     template_folder='templates'
+)
+
+facebook = oauth.remote_app('facebook',
+    base_url='https://graph.facebook.com/',
+    request_token_url=None,
+    access_token_url='/oauth/access_token',
+    authorize_url='https://www.facebook.com/dialog/oauth',
+    consumer_key=FACEBOOK_APP_ID,
+    consumer_secret=FACEBOOK_APP_SECRET,
+    request_token_params={'scope': 'email'}
 )
 
 @users_blueprint.route(ROUTE_PREPEND+"/", methods=['GET', 'POST'])
@@ -40,6 +54,31 @@ def login():
     else:
         #?? Render the template client side. What should i return here?
         return render_template('test.html', error=None)
+
+
+@users_blueprint.route(ROUTE_PREPEND+'/login/facebook', methods=['GET', 'POST'])
+def login_facebook():
+     return facebook.authorize(callback=url_for('facebook_authorized',
+        next=request.args.get('next') or request.referrer or None,
+        _external=True))
+
+
+@users_blueprint.route('/login/authorized')
+@facebook.authorized_handler
+def facebook_authorized(resp):
+    if resp is None:
+        return 'Access denied: reason=%s error=%s' % (
+            request.args['error_reason'],
+            request.args['error_description']
+        )
+    session['oauth_token'] = (resp['access_token'], '')
+    me = facebook.get('/me')
+    return 'Logged in as id=%s name=%s redirect=%s' % \
+        (me.data['id'], me.data['name'], request.args.get('next'))
+
+@facebook.tokengetter
+def get_facebook_oauth_token():
+    return session.get('oauth_token')
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/signup', methods=['GET', 'POST'])

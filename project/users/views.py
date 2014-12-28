@@ -1,7 +1,8 @@
 from flask import redirect, render_template, request, \
     url_for, Blueprint, request, jsonify, session
-from flask.ext.login import login_user, login_required, logout_user
+from flask.ext.login import login_user, login_required, logout_user, abort
 from project import bcrypt, ROUTE_PREPEND
+from flask.ext.api import FlaskAPI, status, exceptions
 import models
 from flask_oauth import OAuth
 from bson.objectid import ObjectId
@@ -34,29 +35,24 @@ def home():
     return render_template('test.html', error=None)
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/login', methods=['GET', 'POST'])
+@users_blueprint.route(ROUTE_PREPEND+'/login', methods=['POST'])
 def login():
     error = None
-    if request.method == 'POST':
-       req = request.json
-       request_email = req['email']
-       request_password = req['password']
-       entry = models.findSingleUser({'email':request_email})
-       print request_email
-       if entry != None:
-           if bcrypt.check_password_hash(entry['password'],request_password):
-               #login_user(user)
-               return jsonify(loggedIn = True, error = None)
-           else:
-               error = 'Invalid password'
-       else:
-           error = 'Invalid email'
-
-       return jsonify(LoggedIn=False, error=error)
+    req = request.json
+    request_email = req['email']
+    request_password = req['password']
+    entry = models.findSingleUser({'email':request_email})
+    print request_email
+    if entry != None:
+        if bcrypt.check_password_hash(entry['password'],request_password):
+            #login_user(user)
+            obj_id = str(entry._id)
+            return userBasicInfo(obj_id)
+        else:
+            error = 'Invalid password'
     else:
-        #?? Render the template client side. What should i return here?
-        return render_template('test.html', error=None)
-
+       error = 'Invalid email'
+       return jsonify(LoggedIn=False, error=error)
 
 @users_blueprint.route(ROUTE_PREPEND+'/login/facebook', methods=['GET', 'POST'])
 def login_facebook():
@@ -107,20 +103,13 @@ def signup():
         return render_template('test.html', error=None)
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET', 'POST'])
+@users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET'])
 def logout():
     logout_user()
     return jsonify(LoggedIn=False, error=None)
 
 
-#TODO: finish this route
-@users_blueprint.route(ROUTE_PREPEND+'/user/details', methods=['POST'])
-def addDetails():
-    req = request.json
-    try:
-       return jsonify(error=None)
-    except:
-        return jsonify(error='you fucked up')
+
 
 ####################################################
 ####################################################
@@ -129,11 +118,15 @@ def addDetails():
 #UserDetails: /api/user/{userid}/details/
 #UserEdges: /api/user/{userid}/edges/
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET'])
-def getUserBasicInfo(userid):
+#TODO:handle the put request
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET', 'PUT'])
+def userBasicInfo(userid):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
-        return jsonify(error='Invalid userid')
+        abort(404)
+    if request.method == 'PUT':
+        #return empty response with 200 status ok
+        return '', status.HTTP_200_OK
     else:
         return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
                        graduation_year=entry['graduation_year'],\
@@ -143,13 +136,13 @@ def getUserBasicInfo(userid):
                        error=None)
 
 
-
-'''@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET'])
-def getUserDetails(userid):
+#TODO:set up this route
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET'])
+def userDetails(userid):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
         return jsonify(error='Invalid userid')
     else:
-        return jsonify(details = entry.details)'''
+        return jsonify(details = entry.details)
 
 

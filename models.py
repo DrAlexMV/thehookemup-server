@@ -1,7 +1,7 @@
 from mongokit import *
 from project import bcrypt
 import datetime
-
+import sys
 
 
 connection = Connection()
@@ -27,6 +27,10 @@ class User(Document):
         'email': basestring,
         'password': basestring,
         'date_joined': datetime.datetime,
+        'graduation_year': basestring,
+        'major': basestring,
+        'description': basestring,
+        'university': basestring,
         'details':[{
             'title':basestring,
             'content':[{
@@ -52,7 +56,7 @@ class User(Document):
 		}
 
     }
-    required_fields = ['name', 'email', 'password', 'date_joined']
+    required_fields = ['name', 'email', 'password', 'date_joined', 'graduation_year', 'major', 'description','university']
     default_values = {
         'date_joined': datetime.datetime.utcnow
     }
@@ -65,12 +69,16 @@ class User(Document):
     def __repr__(self):
         return '<User %r>' % (self.name)
 
-def createUser(name, email, password):
-    user = Users.User()
-    user['name']=name
-    user['email']=email
-    user['password']= bcrypt.generate_password_hash(password)
-    return user
+def createUser(jsonAttributes):
+        user = Users.User()
+        user['name']=jsonAttributes['name']
+        user['email']=jsonAttributes['email']
+        user['password']= bcrypt.generate_password_hash(jsonAttributes['password'])
+        user['graduation_year']=jsonAttributes['graduation_year']
+        user['major']=jsonAttributes['major']
+        user['description']=jsonAttributes['description']
+        user['university']=jsonAttributes['university']
+        return user
 
 def addJob(user, companyName, startDate, description, currentlyWorking):
     job = {
@@ -81,7 +89,7 @@ def addJob(user, companyName, startDate, description, currentlyWorking):
     }
     user['jobs'].append(job)
 
-
+#TODO: fix this up
 def addDetail(user, title, content):
     detail = {
         'title':title,
@@ -89,6 +97,13 @@ def addDetail(user, title, content):
     }
     user.details.append(detail)
 
+def findSingleUser(mapAttributes):
+    entry = Users.User.find_one(mapAttributes)
+    return entry
+
+def findMultipleUsers(mapAttributes):
+    entries = Users.User.find(mapAttributes)
+    return entries
 
 
 # register the User document with our current connection

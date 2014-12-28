@@ -4,6 +4,8 @@ from flask.ext.login import login_user, login_required, logout_user
 from project import bcrypt, ROUTE_PREPEND
 import models
 from flask_oauth import OAuth
+from bson.objectid import ObjectId
+import sys
 
 FACEBOOK_APP_ID = '188477911223606'
 FACEBOOK_APP_SECRET = '621413ddea2bcc5b2e83d42fc40495de'
@@ -39,18 +41,18 @@ def login():
        req = request.json
        request_email = req['email']
        request_password = req['password']
-       entry = models.Users.User.find_one({'email':request_email})
+       entry = models.findSingleUser({'email':request_email})
        print request_email
        if entry != None:
            if bcrypt.check_password_hash(entry['password'],request_password):
                #login_user(user)
-               return jsonify(loggedIn = True, errors = None)
+               return jsonify(loggedIn = True, error = None)
            else:
                error = 'Invalid password'
        else:
            error = 'Invalid email'
 
-       return jsonify(LoggedIn=False, errors=error)
+       return jsonify(LoggedIn=False, error=error)
     else:
         #?? Render the template client side. What should i return here?
         return render_template('test.html', error=None)
@@ -85,19 +87,21 @@ def get_facebook_oauth_token():
 def signup():
     error = None
     if request.method == 'POST':
-       req = request.json
-       request_email = req['email']
-       request_password = req['password']
-       request_name = req['name']
-       entry = models.Users.User.find_one({'email':request_email})
-       if entry == None:
-           user = models.createUser(request_name, request_email, request_password)
-           user.save()
-           #login_user(user)
-           return jsonify(loggedIn = True, errors = None)
-       else:
-           error = 'Email is already in use'
-           return jsonify(LoggedIn=False, errors=error)
+        req = request.json
+        request_email = req['email']
+        entry = models.findSingleUser({'email':request_email})
+        if entry == None:
+            try:
+                user = models.createUser(req)
+            except:
+                e = sys.exc_info()[0]
+                return jsonify(error=str(e))
+            user.save()
+            #login_user(user)
+            return jsonify(loggedIn = True, error = None)
+        else:
+            error = 'Email is already in use'
+            return jsonify(LoggedIn=False, error=error)
     else:
         #?? Render the template client side. What should i return here?
         return render_template('test.html', error=None)
@@ -106,7 +110,7 @@ def signup():
 @users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET', 'POST'])
 def logout():
     logout_user()
-    return jsonify(LoggedIn=False, errors=None)
+    return jsonify(LoggedIn=False, error=None)
 
 
 ####################################################
@@ -116,8 +120,27 @@ def logout():
 #UserDetails: /api/user/{userid}/details/
 #UserEdges: /api/user/{userid}/edges/
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/{userid}', methods=['GET'])
-def getUserBasicInfo():
-    http_get_name = request.args.get('email', 'Anonymous')
-    logout_user()
-    return jsonify(LoggedIn=False, errors=None)
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET'])
+def getUserBasicInfo(userid):
+    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    if entry==None:
+        return jsonify(error='Invalid userid')
+    else:
+        return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
+                       graduation_year=entry['graduation_year'],\
+                       major = entry['major'],\
+                       description = entry['description'],\
+                       university=entry['university'],\
+                       error=None)
+
+
+
+'''@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET'])
+def getUserDetails(userid):
+    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    if entry==None:
+        return jsonify(error='Invalid userid')
+    else:
+        return jsonify(details = entry.details)'''
+
+

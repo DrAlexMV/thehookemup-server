@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block style %}
+
+<link href="{{ url_for('static', filename='styleLogin.css') }}" rel="stylesheet" >
+{% endblock %}
+
+{% block content %}
+
+<h1>Please login </h1>
+<br>
+
+
+
+  <form name= "loginForm" class="form-signin" role="form" method="post" onsubmit="return validateForm()" action="">
+
+        <input type="text" placeholder="Username" name="username" value="{{
+          request.form.username }}">
+      <span class="error" id="usernameSpan">
+
+
+
+      </span>
+
+
+
+      <br>
+         <input type="password" placeholder="Password" name="password" value="{{
+          request.form.password }}">
+       <span class="error" id="passwordSpan">
+
+
+
+      </span>
+
+      <br>
+      <span class="error" style="color:red" id="invalidSpan">
+
+          {% if error is not none %}
+          { error }
+          {% endif %}
+
+      </span><br>
+
+        <button class="btn btn-sm btn-success" type="submit">Sign in</button>
+      </form>
+<br>
+<p>Click <a href="/register"> here </a> to signup.</p>
+
+
+<img src = "/static/images/AIESECBanner.jpg" class="navbar-fixed-bottom" width="100%">
+
+<script>
+   function validateForm() {
+    var username = document.forms["loginForm"]["username"].value;
+    if (username==null || username=="" ) {
+        document.getElementById("usernameSpan").innerHTML="Username cannot be empty";
+        return false;
+    }
+}
+</script>
+{% endblock %}

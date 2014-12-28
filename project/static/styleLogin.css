@@ -1,0 +1,12 @@
+body {
+    background-color: #000;
+    background-image: url("images/world.jpg");
+    background-position: center center;
+    background-repeat: no-repeat;
+}
+.fix{
+    position:fixed;
+    bottom:0px;
+    left:50%;
+}
+

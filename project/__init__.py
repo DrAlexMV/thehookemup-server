@@ -5,24 +5,28 @@
 from flask import Flask
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.login import LoginManager
-
-import os
+from mongokit import *
+from flask.ext.bcrypt import Bcrypt
 
 ################
 #### config ####
 ################
 
+
+ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
-db = MongoKit(app)
-db.register([Task])
 #app.config.from_object(os.environ['APP_SETTINGS'])
+
+
 
 
 from project.users.views import users_blueprint
 app.register_blueprint(users_blueprint)
+
+
 '''
 from project.home.views import home_blueprint
 from project.admin.views import admin_blueprint

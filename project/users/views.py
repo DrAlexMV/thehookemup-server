@@ -113,6 +113,15 @@ def logout():
     return jsonify(LoggedIn=False, error=None)
 
 
+#TODO: finish this route
+@users_blueprint.route(ROUTE_PREPEND+'/user/details', methods=['POST'])
+def addDetails():
+    req = request.json
+    try:
+       return jsonify(error=None)
+    except:
+        return jsonify(error='you fucked up')
+
 ####################################################
 ####################################################
 

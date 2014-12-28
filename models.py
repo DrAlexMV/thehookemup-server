@@ -1,7 +1,6 @@
 from mongokit import *
 from project import bcrypt
 import datetime
-import sys
 
 
 connection = Connection()
@@ -44,11 +43,11 @@ class User(Document):
                }]
         }],
         'jobs':[{
-                'company name': basestring,
-                'start date': basestring,
-                'end date':  basestring,
+                'company_name': basestring,
+                'start_date': basestring,
+                'end_date':  basestring,
                 'description': basestring,
-                'currently working': bool
+                'currently_working': bool
                 }],
         'edges': {
 			'connections': [int],
@@ -69,6 +68,22 @@ class User(Document):
     def __repr__(self):
         return '<User %r>' % (self.name)
 
+    #### Required to be implemented for login manager ####
+
+    def is_authenticated(self):
+        return True
+
+    def is_active(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return unicode(self.email)
+
+    ######################################################
+
 def createUser(jsonAttributes):
         user = Users.User()
         user['name']=jsonAttributes['name']
@@ -80,14 +95,8 @@ def createUser(jsonAttributes):
         user['university']=jsonAttributes['university']
         return user
 
-def addJob(user, companyName, startDate, description, currentlyWorking):
-    job = {
-        'company':companyName,
-        'startDate':startDate,
-        'description':description,
-        'currentlyWorking':currentlyWorking
-    }
-    user['jobs'].append(job)
+def addJob(user, jsonAttributes):
+    user['jobs'].append(jsonAttributes)
 
 #TODO: fix this up
 def addDetail(user, title, content):

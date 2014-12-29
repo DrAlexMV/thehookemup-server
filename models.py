@@ -98,13 +98,49 @@ def createUser(jsonAttributes):
 def addJob(user, jsonAttributes):
     user['jobs'].append(jsonAttributes)
 
-#TODO: fix this up
-def addDetail(user, title, content):
-    detail = {
-        'title':title,
-        'content':content
+
+def addDetail(user, request_detail):
+    return None
+    '''
+    title':basestring,
+            'content':[{
+                   'title': basestring,
+                   'description': basestring,
+                   'subpoints':[{
+                       'title':basestring,
+                       'description':basestring
+                                }]
+
     }
+    '''
+    '''
+   detail = {}
+    detail['content']=[]
+    detail['title']=detail['title']
+    for request_content in request_detail['content']:
+        content = {}
+        content['subpoints']=[]
+        content['title']=request_content['title']
+        content['description']=request_content['description']
+        for request_subpoint in request_content['subpoints']:
+            subpoint = {}
+            subpoint['title']=request_subpoint['title']
+            subpoint['description']=request_subpoint['description']
+            content['subpoints'].append(subpoint)
+        detail['content'].append(content)
+
+    for existing_detail in user.details:
+        if existing_detail['title']=request_detail['title']
+
+    print 'detail is: '
+    print detail
+    for det in detail:
+       print det
+       for thing in det:
+           print thing
+       print 'ihafoihasohiafs'
     user.details.append(detail)
+    user.save()'''
 
 def findSingleUser(mapAttributes):
     entry = Users.User.find_one(mapAttributes)
@@ -113,6 +149,7 @@ def findSingleUser(mapAttributes):
 def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
+
 
 
 # register the User document with our current connection

@@ -118,14 +118,20 @@ def logout():
 #UserDetails: /api/user/{userid}/details/
 #UserEdges: /api/user/{userid}/edges/
 
-#TODO:handle the put request
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET', 'PUT'])
 def userBasicInfo(userid):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
         abort(404)
     if request.method == 'PUT':
-        #return empty response with 200 status ok
+        req = request.get_json()
+        try:
+            for field in req:
+                entry[field]=req[field]
+                entry.save()
+        except:
+            #return jsonify(error='broken')
+            return jsonify(error='Invalid key'),status.HTTP_400_BAD_REQUEST
         return '', status.HTTP_200_OK
     else:
         return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
@@ -136,13 +142,28 @@ def userBasicInfo(userid):
                        error=None)
 
 
-#TODO:set up this route
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET'])
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
 def userDetails(userid):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
-        return jsonify(error='Invalid userid')
+        abort(404)
+    if request.method == 'PUT':
+        req = request.get_json()
+        try:
+            models.addDetail(entry,req)
+        except:
+            #print req['details']
+            print sys.exc_info()[0]
+            return jsonify(error='Invalid detail format'),status.HTTP_400_BAD_REQUEST
+        #return empty response with 200 status ok
+        return '', status.HTTP_200_OK
     else:
-        return jsonify(details = entry.details)
+        return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
+                       graduation_year=entry['graduation_year'],\
+                       major = entry['major'],\
+                       description = entry['description'],\
+                       university=entry['university'],\
+                       error=None)
 
 

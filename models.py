@@ -1,10 +1,8 @@
 from mongokit import *
 from project import bcrypt
 import datetime
-
-
-connection = Connection()
-Users = connection['thehookemup'].Users
+from project import connection
+from project import Users
 
 
 
@@ -89,10 +87,14 @@ def createUser(jsonAttributes):
         user['name']=jsonAttributes['name']
         user['email']=jsonAttributes['email']
         user['password']= bcrypt.generate_password_hash(jsonAttributes['password'])
-        user['graduation_year']=jsonAttributes['graduation_year']
-        user['major']=jsonAttributes['major']
         user['description']=jsonAttributes['description']
-        user['university']=jsonAttributes['university']
+        #following fields not required
+        if 'graduation_year' in jsonAttributes:
+            user['graduation_year']=jsonAttributes['graduation_year']
+        if 'major' in jsonAttributes:
+            user['major']=jsonAttributes['major']
+        if 'university' in jsonAttributes:
+            user['university']=jsonAttributes['university']
         return user
 
 def addJob(user, jsonAttributes):

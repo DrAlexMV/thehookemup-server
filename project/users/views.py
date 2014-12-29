@@ -40,13 +40,16 @@ def home():
 def login():
     error = None
     req = request.json
-    request_email = req['email']
-    request_password = req['password']
+    try:
+        request_email = req['email']
+        request_password = req['password']
+    except:
+        e = sys.exc_info()[0]
+        return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
     entry = models.findSingleUser({'email':request_email})
-    print request_email
     if entry != None:
         if bcrypt.check_password_hash(entry['password'],request_password):
-            #login_user(user)
+            login_user(entry)
             obj_id = str(entry._id)
             return userBasicInfo(obj_id)
         else:
@@ -92,7 +95,7 @@ def signup():
                 user = models.createUser(req)
             except:
                 e = sys.exc_info()[0]
-                return jsonify(error=str(e))
+                return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
             user.save()
             #login_user(user)
             return jsonify(loggedIn = True, error = None)
@@ -105,6 +108,7 @@ def signup():
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET'])
+@login_required
 def logout():
     logout_user()
     return jsonify(LoggedIn=False, error=None)
@@ -120,6 +124,7 @@ def logout():
 #UserEdges: /api/user/{userid}/edges/
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET', 'PUT'])
+@login_required
 def userBasicInfo(userid):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
@@ -142,9 +147,11 @@ def userBasicInfo(userid):
                        major = entry['major'],\
                        description = entry['description'],\
                        university=entry['university'],\
+                       _id=userid,\
                        error=None)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
+@login_required
 def delete_basic_user_info(userid, attribute):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
@@ -161,6 +168,7 @@ def delete_basic_user_info(userid, attribute):
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
+@login_required
 def userDetails(userid):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:
@@ -180,9 +188,8 @@ def userDetails(userid):
         return Response(json.dumps(entry['details']),  mimetype='application/json')
 
 
-
-
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])
+@login_required
 def deleteDetail(userid, detail_title):
     entry = models.findSingleUser({'_id':ObjectId(userid)})
     if entry==None:

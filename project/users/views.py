@@ -127,6 +127,7 @@ def userBasicInfo(userid):
     if request.method == 'PUT':
         req = request.get_json()
         try:
+            #TODO: this needs to be refactored to not save multiple times to improve speed
             for field in req:
                 entry[field]=req[field]
                 entry.save()
@@ -134,6 +135,7 @@ def userBasicInfo(userid):
             #return jsonify(error='broken')
             return jsonify(error='Invalid key'),status.HTTP_400_BAD_REQUEST
         return '', status.HTTP_200_OK
+
     else:
         return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
                        graduation_year=entry['graduation_year'],\
@@ -142,6 +144,20 @@ def userBasicInfo(userid):
                        university=entry['university'],\
                        error=None)
 
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
+def delete_basic_user_info(userid, attribute):
+    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    if entry==None:
+        abort(404)
+    try:
+        entry[attribute]=None
+        entry.save()
+    except:
+        #print req['details']
+        print sys.exc_info()[0]
+        return jsonify(error='Invalid key or field cannot be deleted'),status.HTTP_400_BAD_REQUEST
+        #return empty response with 200 status ok
+    return '', status.HTTP_200_OK
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
@@ -162,6 +178,8 @@ def userDetails(userid):
     else:
         print entry['details']
         return Response(json.dumps(entry['details']),  mimetype='application/json')
+
+
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])

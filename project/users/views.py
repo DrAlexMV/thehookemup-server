@@ -1,8 +1,9 @@
 from flask import redirect, render_template, request, \
-    url_for, Blueprint, request, jsonify, session
+    url_for, Blueprint, request, jsonify, session, Response
 from flask.ext.login import login_user, login_required, logout_user, abort
 from project import bcrypt, ROUTE_PREPEND
 from flask.ext.api import FlaskAPI, status, exceptions
+import json
 import models
 from flask_oauth import OAuth
 from bson.objectid import ObjectId
@@ -159,11 +160,20 @@ def userDetails(userid):
         #return empty response with 200 status ok
         return '', status.HTTP_200_OK
     else:
-        return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
-                       graduation_year=entry['graduation_year'],\
-                       major = entry['major'],\
-                       description = entry['description'],\
-                       university=entry['university'],\
-                       error=None)
+        print entry['details']
+        return Response(json.dumps(entry['details']),  mimetype='application/json')
 
 
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])
+def deleteDetail(userid, detail_title):
+    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    if entry==None:
+        abort(404)
+    try:
+        models.removeDetail(entry,detail_title)
+    except:
+        #print req['details']
+        print sys.exc_info()[0]
+        return jsonify(error='Invalid detail format'),status.HTTP_400_BAD_REQUEST
+        #return empty response with 200 status ok
+    return '', status.HTTP_200_OK

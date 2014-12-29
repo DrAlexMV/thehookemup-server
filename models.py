@@ -50,12 +50,12 @@ class User(Document):
                 'currently_working': bool
                 }],
         'edges': {
-			'connections': [int],
-			'associations': [int]
+			'connections': [basestring],
+			'associations': [basestring]
 		}
 
     }
-    required_fields = ['name', 'email', 'password', 'date_joined', 'graduation_year', 'major', 'description','university']
+    required_fields = ['name', 'email', 'password', 'date_joined', 'description']
     default_values = {
         'date_joined': datetime.datetime.utcnow
     }
@@ -100,23 +100,16 @@ def addJob(user, jsonAttributes):
 
 
 def addDetail(user, request_detail):
-    return None
-    '''
-    title':basestring,
-            'content':[{
-                   'title': basestring,
-                   'description': basestring,
-                   'subpoints':[{
-                       'title':basestring,
-                       'description':basestring
-                                }]
 
-    }
-    '''
-    '''
-   detail = {}
+    i=0
+    for detail in user['details']:
+        if detail['title']==request_detail['title']:
+            user['details'].pop(i)
+        i = i+1
+
+    detail = {}
     detail['content']=[]
-    detail['title']=detail['title']
+    detail['title']=request_detail['title']
     for request_content in request_detail['content']:
         content = {}
         content['subpoints']=[]
@@ -128,19 +121,23 @@ def addDetail(user, request_detail):
             subpoint['description']=request_subpoint['description']
             content['subpoints'].append(subpoint)
         detail['content'].append(content)
-
-    for existing_detail in user.details:
-        if existing_detail['title']=request_detail['title']
-
-    print 'detail is: '
-    print detail
-    for det in detail:
-       print det
-       for thing in det:
-           print thing
-       print 'ihafoihasohiafs'
     user.details.append(detail)
-    user.save()'''
+
+    user.save()
+
+def removeDetail(user, detail_title):
+    i = 0
+    removed='false'
+    for detail in user['details']:
+        if detail['title']==detail_title:
+            user['details'].pop(i)
+            removed='true'
+        i=i+1
+    user.save()
+    return removed
+
+
+
 
 def findSingleUser(mapAttributes):
     entry = Users.User.find_one(mapAttributes)

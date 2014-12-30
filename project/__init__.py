@@ -19,7 +19,7 @@ ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
 cors = CORS(app, allow_headers=['Origin','Content-Type'],
 	supports_credentials=True,
-	origins='http://localhost:3000');
+	origins='http://localhost:3000')
 
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 app.debug = True

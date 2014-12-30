@@ -99,7 +99,7 @@ def signup():
                 return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
             user.save()
             #login_user(user)
-            return jsonify(loggedIn = True, error = None)
+            return jsonify(loggedIn = True, error = None, _id=str(user._id))
         else:
             error = 'Email is already in use'
             return jsonify(LoggedIn=False, error=error)

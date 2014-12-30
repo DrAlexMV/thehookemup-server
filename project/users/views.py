@@ -162,7 +162,8 @@ def userDetails(userid):
     if request.method == 'PUT':
         req = request.get_json()
         try:
-            models.addDetail(entry,req)
+            for detail in req:
+                models.addDetail(entry, detail)
         except:
             #print req['details']
             print sys.exc_info()[0]
@@ -180,11 +181,8 @@ def deleteDetail(userid, detail_title):
     entry = models.findUserByID(userid)
     if entry==None:
         abort(404)
-    try:
-        models.removeDetail(entry,detail_title)
-    except:
-        #print req['details']
-        print sys.exc_info()[0]
-        return jsonify(error='Invalid detail format'),HTTP_400_BAD_REQUEST
-        #return empty response with 200 status ok
-    return '', HTTP_200_OK
+
+    if models.removeDetail(entry, detail_title):
+        return '', HTTP_200_OK
+    else:
+        return '', HTTP_404_NOT_FOUND

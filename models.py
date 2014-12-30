@@ -144,15 +144,13 @@ def addDetail(user, request_detail):
 
 def removeDetail(user, detail_title):
     i = 0
-    removed='false'
     for detail in user['details']:
-        if detail['title']==detail_title:
+        if detail['title'] == detail_title:
             user['details'].pop(i)
-            removed='true'
+            user.save()
+            return True
         i=i+1
-    user.save()
-    return removed
-
+    return False
 
 ## Like FindSingleUser but takes a string.
 def findUserByID(userid):

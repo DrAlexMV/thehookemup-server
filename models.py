@@ -77,6 +77,7 @@ class User(Document):
     def is_anonymous(self):
         return False
 
+    #TODO: probably should use _id instead of email for login manager
     def get_id(self):
         return unicode(self.email)
 

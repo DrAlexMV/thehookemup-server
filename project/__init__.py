@@ -45,6 +45,7 @@ app.register_blueprint(admin_blueprint)
 '''
 login_manager.login_view = "users.login"
 
+#TODO: We should probably use _id instead of email for login and out info
 @login_manager.user_loader
 def load_user(user_id):
     return Users.User.find_one({'email':user_id})

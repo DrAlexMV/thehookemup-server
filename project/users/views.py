@@ -57,7 +57,7 @@ def login():
             error = 'Invalid password'
     else:
        error = 'Invalid email'
-       return jsonify(LoggedIn=False, error=error)
+    return jsonify(LoggedIn=False, error=error),status.HTTP_400_BAD_REQUEST
 
 @users_blueprint.route(ROUTE_PREPEND+'/login/facebook', methods=['GET', 'POST'])
 def login_facebook():
@@ -84,28 +84,24 @@ def get_facebook_oauth_token():
     return session.get('oauth_token')
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/signup', methods=['GET', 'POST'])
+@users_blueprint.route(ROUTE_PREPEND+'/signup', methods=['POST'])
 def signup():
     error = None
-    if request.method == 'POST':
-        req = request.json
-        request_email = req['email']
-        entry = models.findSingleUser({'email':request_email})
-        if entry == None:
-            try:
-                user = models.createUser(req)
-            except:
-                e = sys.exc_info()[0]
-                return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
-            user.save()
-            #login_user(user)
-            return jsonify(loggedIn = True, error = None, _id=str(user._id))
-        else:
-            error = 'Email is already in use'
-            return jsonify(LoggedIn=False, error=error)
+    req = request.json
+    request_email = req['email']
+    entry = models.findSingleUser({'email':request_email})
+    if entry == None:
+        try:
+            user = models.createUser(req)
+        except:
+            e = sys.exc_info()[0]
+            return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
+        user.save()
+        #login_user(user)
+        return jsonify(loggedIn = True, error = None, _id=str(user._id))
     else:
-        #?? Render the template client side. What should i return here?
-        return render_template('test.html', error=None)
+        error = 'Email is already in use'
+        return jsonify(LoggedIn=False, error=error),status.HTTP_400_BAD_REQUEST
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET'])
@@ -143,7 +139,7 @@ def userBasicInfo(userid):
         return '', status.HTTP_200_OK
 
     else:
-        return jsonify(email=entry['email'], name=entry['name'], date_joined = entry['date_joined'], \
+        return jsonify(email=entry['email'], first_name=entry['first_name'], last_name=entry['last_name'], date_joined = entry['date_joined'], \
                        graduation_year=entry['graduation_year'],\
                        major = entry['major'],\
                        description = entry['description'],\

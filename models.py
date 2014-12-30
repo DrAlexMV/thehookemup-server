@@ -20,7 +20,8 @@ class User(Document):
     __collection__ = 'Users'
     __database__ = 'thehookemup'
     structure = {
-        'name': basestring,
+        'first_name': basestring,
+        'last_name': basestring,
         'email': basestring,
         'password': basestring,
         'date_joined': datetime.datetime,
@@ -53,18 +54,19 @@ class User(Document):
 		}
 
     }
-    required_fields = ['name', 'email', 'password', 'date_joined', 'description']
+    required_fields = ['first_name','last_name', 'email', 'password', 'date_joined', 'description']
     default_values = {
         'date_joined': datetime.datetime.utcnow
     }
     validators = {
-        'name': max_length(50),
+        'first_name': max_length(50),
+        'last_name': max_length(50),
         'email': max_length(120),
         'password': max_length(120)
     }
     use_dot_notation = True
     def __repr__(self):
-        return '<User %r>' % (self.name)
+        return '<User %r>' % (self.first_name)
 
     #### Required to be implemented for login manager ####
 
@@ -85,7 +87,8 @@ class User(Document):
 
 def createUser(jsonAttributes):
         user = Users.User()
-        user['name']=jsonAttributes['name']
+        user['first_name']=jsonAttributes['first_name']
+        user['last_name']=jsonAttributes['last_name']
         user['email']=jsonAttributes['email']
         user['password']= bcrypt.generate_password_hash(jsonAttributes['password'])
         user['description']=jsonAttributes['description']

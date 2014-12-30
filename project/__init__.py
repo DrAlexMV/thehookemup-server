@@ -7,6 +7,7 @@ from flask.ext.bcrypt import Bcrypt
 from flask.ext.login import LoginManager
 from mongokit import *
 from flask.ext.bcrypt import Bcrypt
+from flask.ext.cors import CORS
 from mongokit import *
 
 ################
@@ -16,8 +17,10 @@ connection = Connection()
 Users = connection['thehookemup'].Users
 ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
+cors = CORS(app, allow_headers='Content-Type')
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 app.debug = True
+
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)

@@ -123,7 +123,7 @@ def logout():
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET', 'PUT'])
 @login_required
 def userBasicInfo(userid):
-    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    entry = models.findUserByID(userid)
     if entry==None:
         abort(404)
     if request.method == 'PUT':
@@ -144,13 +144,13 @@ def userBasicInfo(userid):
                        major = entry['major'],\
                        description = entry['description'],\
                        university=entry['university'],\
-                       _id=userid,\
+                       _id=str(entry['_id']),\
                        error=None)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
 @login_required
 def delete_basic_user_info(userid, attribute):
-    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    entry = models.findUserByID(userid)
     if entry==None:
         abort(404)
     try:
@@ -167,7 +167,7 @@ def delete_basic_user_info(userid, attribute):
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
 @login_required
 def userDetails(userid):
-    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    entry = models.findUserByID(userid)
     if entry==None:
         abort(404)
     if request.method == 'PUT':
@@ -188,7 +188,7 @@ def userDetails(userid):
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])
 @login_required
 def deleteDetail(userid, detail_title):
-    entry = models.findSingleUser({'_id':ObjectId(userid)})
+    entry = models.findUserByID(userid)
     if entry==None:
         abort(404)
     try:

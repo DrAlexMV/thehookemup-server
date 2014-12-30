@@ -3,8 +3,8 @@ from project import bcrypt
 import datetime
 from project import connection
 from project import Users
-
-
+from bson.objectid import ObjectId
+from flask.ext.login import current_user
 
 def max_length(length):
     def validate(value):
@@ -143,7 +143,15 @@ def removeDetail(user, detail_title):
     return removed
 
 
+## Like FindSingleUser but takes a string.
+def findUserByID(userid):
+    if userid == 'me':
+        uid = current_user._id
+    else:
+        uid = ObjectId(userid)
 
+    entry = Users.User.find_one({'_id': uid})
+    return entry
 
 def findSingleUser(mapAttributes):
     entry = Users.User.find_one(mapAttributes)

@@ -1,5 +1,6 @@
 Flask==0.10.1
 Flask-Bcrypt==0.6.0
+Flask-CORS==1.10.2
 Flask-Login==0.2.11
 Flask-MongoKit==0.6
 Jinja2==2.7.3

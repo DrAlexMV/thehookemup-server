@@ -4,12 +4,16 @@ from flask import request
 import time
 from flask import request
 
+from flask.ext.cors import CORS
+
 # configuration
 MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 
 # create the little application object
 app = Flask(__name__)
+cors = CORS(app)
+
 app.config.from_object(__name__)
 app.config['DEBUG'] = True
 

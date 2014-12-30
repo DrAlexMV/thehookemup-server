@@ -159,7 +159,10 @@ def findUserByID(userid):
     if userid == 'me':
         uid = current_user._id
     else:
-        uid = ObjectId(userid)
+        try:
+            uid = ObjectId(userid)
+        except:
+            return None
 
     entry = Users.User.find_one({'_id': uid})
     return entry

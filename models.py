@@ -3,6 +3,7 @@ from project import bcrypt
 import datetime
 from project import connection
 from project import Users
+from project import utils
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
 
@@ -12,8 +13,6 @@ def max_length(length):
             return True
         raise Exception('%s must be at most %s characters long' % length)
     return validate
-
-
 
 @connection.register
 class User(Document):
@@ -55,7 +54,21 @@ class User(Document):
 		}
 
     }
-    required_fields = ['first_name','last_name', 'email', 'password', 'date_joined', 'description']
+    required_fields = ['first_name','last_name', 'email', 'password', 'role']
+    
+    basic_info_fields = [
+        'first_name',
+        'last_name',
+        'email',
+        'date_joined',
+        'role',
+        'graduation_year',
+        'major',
+        'university',
+        'description',
+        '_id'
+    ]
+
     default_values = {
         'date_joined': datetime.datetime.utcnow
     }
@@ -87,20 +100,17 @@ class User(Document):
     ######################################################
 
 def createUser(jsonAttributes):
-        user = Users.User()
-        user['first_name']=jsonAttributes['first_name']
-        user['last_name']=jsonAttributes['last_name']
-        user['email']=jsonAttributes['email']
-        user['password']= bcrypt.generate_password_hash(jsonAttributes['password'])
-        user['description']=jsonAttributes['description']
-        #following fields not required
-        if 'graduation_year' in jsonAttributes:
-            user['graduation_year']=jsonAttributes['graduation_year']
-        if 'major' in jsonAttributes:
-            user['major']=jsonAttributes['major']
-        if 'university' in jsonAttributes:
-            user['university']=jsonAttributes['university']
-        return user
+    #jsonAttributes = jsonAttributes[:]
+    user = Users.User()
+    # swizzle password here
+    jsonAttributes['password'] = bcrypt.generate_password_hash(jsonAttributes['password'])
+
+    utils.mergeFrom(jsonAttributes, user, User.required_fields)
+
+    not_required = ['graduation_year', 'major', 'university', 'description']
+    utils.mergeFrom(jsonAttributes, user, not_required, require=False)
+
+    return user
 
 def addJob(user, jsonAttributes):
     user['jobs'].append(jsonAttributes)

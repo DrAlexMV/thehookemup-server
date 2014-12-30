@@ -1,8 +1,9 @@
 from flask import redirect, render_template, request, \
     url_for, Blueprint, request, jsonify, session, Response
 from flask.ext.login import login_user, login_required, logout_user, abort
-from project import bcrypt, ROUTE_PREPEND
-from flask.ext.api import FlaskAPI, status, exceptions
+from project import bcrypt, ROUTE_PREPEND, utils
+from flask.ext.api import FlaskAPI, exceptions
+from flask.ext.api.status import *
 import json
 import models
 from flask_oauth import OAuth
@@ -46,7 +47,7 @@ def login():
         request_password = req['password']
     except:
         e = sys.exc_info()[0]
-        return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
+        return jsonify(error=str(e)),HTTP_400_BAD_REQUEST
     entry = models.findSingleUser({'email':request_email})
     if entry != None:
         if bcrypt.check_password_hash(entry['password'],request_password):
@@ -57,7 +58,7 @@ def login():
             error = 'Invalid password'
     else:
        error = 'Invalid email'
-    return jsonify(LoggedIn=False, error=error),status.HTTP_400_BAD_REQUEST
+    return jsonify(LoggedIn=False, error=error),HTTP_400_BAD_REQUEST
 
 @users_blueprint.route(ROUTE_PREPEND+'/login/facebook', methods=['GET', 'POST'])
 def login_facebook():
@@ -93,15 +94,15 @@ def signup():
     if entry == None:
         try:
             user = models.createUser(req)
+            user.save()
         except:
             e = sys.exc_info()[0]
-            return jsonify(error=str(e)),status.HTTP_400_BAD_REQUEST
-        user.save()
+            return jsonify(error=str(e)),HTTP_400_BAD_REQUEST
         #login_user(user)
         return jsonify(loggedIn = True, error = None, _id=str(user._id))
     else:
         error = 'Email is already in use'
-        return jsonify(LoggedIn=False, error=error),status.HTTP_400_BAD_REQUEST
+        return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET'])
@@ -109,8 +110,6 @@ def signup():
 def logout():
     logout_user()
     return jsonify(LoggedIn=False, error=None)
-
-
 
 
 ####################################################
@@ -129,24 +128,14 @@ def userBasicInfo(userid):
     if request.method == 'PUT':
         req = request.get_json()
         try:
-            #TODO: this needs to be refactored to not save multiple times to improve speed
-            for field in req:
-                entry[field]=req[field]
-                entry.save()
+            utils.mergeFrom(req, entry, models.User.basic_info_fields, require=False)
+            entry.save()
         except:
-            #return jsonify(error='broken')
-            return jsonify(error='Invalid key'),status.HTTP_400_BAD_REQUEST
-        return '', status.HTTP_200_OK
+            return jsonify(error='Invalid key'),HTTP_400_BAD_REQUEST
+        return '', HTTP_200_OK
 
-    else:
-        return jsonify(email=entry['email'], first_name=entry['first_name'], last_name=entry['last_name'], date_joined = entry['date_joined'], \
-                       graduation_year=entry['graduation_year'],\
-                       major = entry['major'],\
-                       description = entry['description'],\
-                       university=entry['university'],\
-                       role=entry['role'],\
-                       _id=str(entry['_id']),\
-                       error=None)
+    else: # GET
+        return utils.jsonFields(entry, models.User.basic_info_fields)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
 @login_required
@@ -158,11 +147,10 @@ def delete_basic_user_info(userid, attribute):
         entry[attribute]=None
         entry.save()
     except:
-        #print req['details']
         print sys.exc_info()[0]
-        return jsonify(error='Invalid key or field cannot be deleted'),status.HTTP_400_BAD_REQUEST
+        return jsonify(error='Invalid key or field cannot be deleted'),HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
-    return '', status.HTTP_200_OK
+    return '', HTTP_200_OK
 
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
@@ -178,9 +166,9 @@ def userDetails(userid):
         except:
             #print req['details']
             print sys.exc_info()[0]
-            return jsonify(error='Invalid detail format'),status.HTTP_400_BAD_REQUEST
+            return jsonify(error='Invalid detail format'),HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
-        return '', status.HTTP_200_OK
+        return '', HTTP_200_OK
     else:
         print entry['details']
         return Response(json.dumps(entry['details']),  mimetype='application/json')
@@ -197,6 +185,6 @@ def deleteDetail(userid, detail_title):
     except:
         #print req['details']
         print sys.exc_info()[0]
-        return jsonify(error='Invalid detail format'),status.HTTP_400_BAD_REQUEST
+        return jsonify(error='Invalid detail format'),HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
-    return '', status.HTTP_200_OK
+    return '', HTTP_200_OK

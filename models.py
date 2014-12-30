@@ -29,6 +29,7 @@ class User(Document):
         'major': basestring,
         'description': basestring,
         'university': basestring,
+        'role': basestring,
         'details':[{
             'title':basestring,
             'content':[{

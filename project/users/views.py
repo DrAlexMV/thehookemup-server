@@ -144,6 +144,7 @@ def userBasicInfo(userid):
                        major = entry['major'],\
                        description = entry['description'],\
                        university=entry['university'],\
+                       role=entry['role'],\
                        _id=str(entry['_id']),\
                        error=None)
 

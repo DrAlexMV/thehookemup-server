@@ -171,9 +171,7 @@ def userDetails(userid):
         #return empty response with 200 status ok
         return '', HTTP_200_OK
     else:
-        print entry['details']
         return Response(json.dumps(entry['details']),  mimetype='application/json')
-
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])
 @login_required
@@ -186,3 +184,20 @@ def deleteDetail(userid, detail_title):
         return '', HTTP_200_OK
     else:
         return '', HTTP_404_NOT_FOUND
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/edges', methods=['GET', 'PUT'])
+@login_required
+def userEdges(userid):
+    entry = models.findUserByID(userid)
+    if entry==None:
+        abort(404)
+    if request.method == 'PUT':
+        req = request.get_json()
+        #try:
+        models.updateEdges(entry, req)
+        #except:
+        #   print sys.exc_info()[0]
+        #    return jsonify(error='Invalid format'),HTTP_400_BAD_REQUEST
+        return '', HTTP_200_OK
+    else:
+        return jsonify(**entry['edges'])

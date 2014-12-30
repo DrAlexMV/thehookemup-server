@@ -49,9 +49,9 @@ class User(Document):
                 'currently_working': bool
                 }],
         'edges': {
-			'connections': [basestring],
-			'associations': [basestring]
-		}
+            'connections': [basestring],
+            'associations': [basestring]
+        }
 
     }
     required_fields = ['first_name','last_name', 'email', 'password', 'role']
@@ -151,6 +151,10 @@ def removeDetail(user, detail_title):
             return True
         i=i+1
     return False
+
+def updateEdges(user, new_edges):
+    utils.mergeFrom(new_edges, user['edges'], ['associations', 'connections'])
+    user.save()
 
 ## Like FindSingleUser but takes a string.
 def findUserByID(userid):

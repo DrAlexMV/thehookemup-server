@@ -3,7 +3,7 @@ from flask import jsonify
 def mergeFrom(fromData, toData, keysToMerge, require=True):
     for key in keysToMerge:
         data = fromData.get(key)
-        if data:
+        if not data is None:
             toData[key] = data
         elif require == True:
             raise Exception('Missing required parameter %s' % key)

@@ -9,6 +9,7 @@ from flask_oauth import OAuth
 from bson.objectid import ObjectId
 import sys
 
+#TODO: these aren't set up correctly yet
 FACEBOOK_APP_ID = '188477911223606'
 FACEBOOK_APP_SECRET = '621413ddea2bcc5b2e83d42fc40495de'
 oauth = OAuth()

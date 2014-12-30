@@ -200,4 +200,11 @@ def userEdges(userid):
         #    return jsonify(error='Invalid format'),HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK
     else:
-        return jsonify(**entry['edges'])
+        annotated = {'connections': [], 'associations': entry['edges']['associations']} 
+        users_ids = map(ObjectId, entry['edges']['connections'])
+        # populate from users list
+        queried = models.findMultipleUsers({'_id': {'$in': users_ids}})
+        for connection_userid in queried:
+            basicuser = utils.jsonFields(connection_userid, models.User.basic_info_fields, response=False)
+            annotated['connections'].append(basicuser)
+        return jsonify(**annotated)

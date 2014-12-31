@@ -25,11 +25,12 @@ class User(Document):
         'email': basestring,
         'password': basestring,
         'dateJoined': datetime.datetime,
-        'graduationYear': basestring,
+        'graduationYear': int,
         'major': basestring,
         'description': basestring,
         'university': basestring,
         'role': basestring,
+        'picture': basestring,
         'details': [{
             'title': basestring,
             'content': [{
@@ -56,7 +57,7 @@ class User(Document):
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
     
-    basic_info_fields = [
+    basic_info_fields = set([
         'firstName',
         'lastName',
         'email',
@@ -66,8 +67,9 @@ class User(Document):
         'major',
         'university',
         'description',
+        'picture',
         '_id'
-    ]
+    ])
 
     default_values = {
         'dateJoined': datetime.datetime.utcnow
@@ -105,8 +107,9 @@ def createUser(jsonAttributes):
 
     utils.mergeFrom(jsonAttributes, user, User.required_fields)
 
-    not_required = ['graduationYear', 'major', 'university', 'description']
-    utils.mergeFrom(jsonAttributes, user, not_required, require=False)
+    optional = User.basic_info_fields.difference(User.required_fields)
+    optional.remove('_id')
+    utils.mergeFrom(jsonAttributes, user, optional, require=False)
 
     return user
 

@@ -18,9 +18,11 @@ from elasticsearch import Elasticsearch
 DATABASE_NAME = 'thehookemup'
 connection = Connection()
 Users = connection[DATABASE_NAME].Users
+DatabaseImages = connection[DATABASE_NAME].DatabaseImages
+
 ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
-cors = CORS(app, allow_headers=['Origin','Content-Type'],
+cors = CORS(app, allow_headers=['Origin','Content-Type', 'Cache-Control', 'X-Requested-With'],
 	supports_credentials=True,
 	origins='http://localhost:3000')
 app.config['CORS_HEADERS'] = 'Content-Type'
@@ -35,7 +37,9 @@ login_manager.init_app(app)
 es=Elasticsearch()
 
 from project.users.views import users_blueprint
+from project.images.views import images_blueprint
 app.register_blueprint(users_blueprint)
+app.register_blueprint(images_blueprint)
 
 login_manager.login_view = "users.login"
 

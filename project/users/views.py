@@ -29,14 +29,6 @@ facebook = oauth.remote_app('facebook',
     request_token_params={'scope': 'email'}
 )
 
-@users_blueprint.route(ROUTE_PREPEND+"/", methods=['GET', 'POST'])
-@login_required
-def home():
-    json = request.json
-    print json
-    return render_template('test.html', error=None)
-
-
 @users_blueprint.route(ROUTE_PREPEND+'/login', methods=['POST'])
 def login():
     error = None

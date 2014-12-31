@@ -42,7 +42,7 @@ class User(Document):
             }]
         }],
         'jobs':[{
-                'company_name': basestring,
+                'companyName': basestring,
                 'startDate': basestring,
                 'endDate':  basestring,
                 'description': basestring,
@@ -154,16 +154,18 @@ def updateEdges(user, new_edges):
     utils.mergeFrom(new_edges, user['edges'], ['associations', 'connections'])
     databaseWrapper.save_entity(user)
 
+## Normalizes userid to ObjectId
+def getUserID(userid):
+    if userid == 'me':
+        return current_user._id
+    try:
+        return ObjectId(userid)
+    except:
+        pass
+
 ## Like FindSingleUser but takes a string.
 def findUserByID(userid):
-    if userid == 'me':
-        uid = current_user._id
-    else:
-        try:
-            uid = ObjectId(userid)
-        except:
-            return None
-
+    uid = getUserID(userid)
     entry = Users.User.find_one({'_id': uid})
     return entry
 
@@ -174,7 +176,3 @@ def findSingleUser(mapAttributes):
 def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
-
-
-
-# register the User document with our current connection

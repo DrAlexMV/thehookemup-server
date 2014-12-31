@@ -12,7 +12,7 @@ def jsonFields(modelInstance, fields, response=True):
     entries = {'error' : None}
     for key in fields:
         val = modelInstance.get(key)
-        entries[key] = str(val) if (val != None) else None
+        entries[key] = val if (type(val) in [str, int, float] or val is None) else str(val)
 
     ## TODO: reporting of incomplete models
     if response:

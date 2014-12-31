@@ -5,7 +5,7 @@ from project import bcrypt, ROUTE_PREPEND, utils
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
 import json
-import models
+from models import user
 from flask_oauth import OAuth
 from bson.objectid import ObjectId
 import sys
@@ -16,8 +16,7 @@ FACEBOOK_APP_SECRET = '621413ddea2bcc5b2e83d42fc40495de'
 oauth = OAuth()
 
 users_blueprint = Blueprint(
-    'users', __name__,
-    template_folder='templates'
+    'users', __name__
 )
 
 facebook = oauth.remote_app('facebook',
@@ -48,7 +47,7 @@ def login():
     except:
         e = sys.exc_info()[0]
         return jsonify(error=str(e)),HTTP_400_BAD_REQUEST
-    entry = models.findSingleUser({'email':request_email})
+    entry = user.findSingleUser({'email':request_email})
     if entry != None:
         if bcrypt.check_password_hash(entry['password'],request_password):
             login_user(entry)
@@ -90,10 +89,10 @@ def signup():
     error = None
     req = request.json
     request_email = req['email']
-    entry = models.findSingleUser({'email':request_email})
+    entry = user.findSingleUser({'email':request_email})
     if entry == None:
         try:
-            user = models.createUser(req)
+            user = user.createUser(req)
             user.save()
         except:
             e = sys.exc_info()[0]
@@ -122,25 +121,25 @@ def logout():
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET', 'PUT'])
 @login_required
 def userBasicInfo(userid):
-    entry = models.findUserByID(userid)
+    entry = user.findUserByID(userid)
     if entry==None:
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
         try:
-            utils.mergeFrom(req, entry, models.User.basic_info_fields, require=False)
+            utils.mergeFrom(req, entry, user.User.basic_info_fields, require=False)
             entry.save()
         except:
             return jsonify(error='Invalid key'),HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK
 
     else: # GET
-        return utils.jsonFields(entry, models.User.basic_info_fields)
+        return utils.jsonFields(entry, user.User.basic_info_fields)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
 @login_required
 def delete_basic_user_info(userid, attribute):
-    entry = models.findUserByID(userid)
+    entry = user.findUserByID(userid)
     if entry==None:
         abort(404)
     try:
@@ -156,14 +155,14 @@ def delete_basic_user_info(userid, attribute):
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
 @login_required
 def userDetails(userid):
-    entry = models.findUserByID(userid)
+    entry = user.findUserByID(userid)
     if entry==None:
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
         try:
             for detail in req:
-                models.addDetail(entry, detail)
+                user.addDetail(entry, detail)
         except:
             #print req['details']
             print sys.exc_info()[0]
@@ -176,11 +175,11 @@ def userDetails(userid):
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])
 @login_required
 def deleteDetail(userid, detail_title):
-    entry = models.findUserByID(userid)
+    entry = user.findUserByID(userid)
     if entry==None:
         abort(404)
 
-    if models.removeDetail(entry, detail_title):
+    if user.removeDetail(entry, detail_title):
         return '', HTTP_200_OK
     else:
         return '', HTTP_404_NOT_FOUND
@@ -188,13 +187,13 @@ def deleteDetail(userid, detail_title):
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/edges', methods=['GET', 'PUT'])
 @login_required
 def userEdges(userid):
-    entry = models.findUserByID(userid)
+    entry = user.findUserByID(userid)
     if entry==None:
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
         #try:
-        models.updateEdges(entry, req)
+        user.updateEdges(entry, req)
         #except:
         #   print sys.exc_info()[0]
         #    return jsonify(error='Invalid format'),HTTP_400_BAD_REQUEST
@@ -203,8 +202,8 @@ def userEdges(userid):
         annotated = {'connections': [], 'associations': entry['edges']['associations']} 
         users_ids = map(ObjectId, entry['edges']['connections'])
         # populate from users list
-        queried = models.findMultipleUsers({'_id': {'$in': users_ids}})
+        queried = user.findMultipleUsers({'_id': {'$in': users_ids}})
         for connection_userid in queried:
-            basicuser = utils.jsonFields(connection_userid, models.User.basic_info_fields, response=False)
+            basicuser = utils.jsonFields(connection_userid, user.User.basic_info_fields, response=False)
             annotated['connections'].append(basicuser)
         return jsonify(**annotated)

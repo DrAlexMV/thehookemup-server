@@ -19,34 +19,33 @@ class User(Document):
     __collection__ = 'Users'
     __database__ = 'thehookemup'
     structure = {
-        'first_name': basestring,
-        'last_name': basestring,
+        'firstName': basestring,
+        'lastName': basestring,
         'email': basestring,
         'password': basestring,
-        'date_joined': datetime.datetime,
-        'graduation_year': basestring,
+        'dateJoined': datetime.datetime,
+        'graduationYear': basestring,
         'major': basestring,
         'description': basestring,
         'university': basestring,
         'role': basestring,
-        'details':[{
-            'title':basestring,
-            'content':[{
-                   'title': basestring,
-                   'description': basestring,
-                   'subpoints':[{
-                       'title':basestring,
-                       'description':basestring
-                                }]
-
-               }]
+        'details': [{
+            'title': basestring,
+            'content': [{
+                'title': basestring,
+                'description': basestring,
+                'subpoints': [{
+                    'title': basestring,
+                    'description': basestring
+                    }]
+            }]
         }],
         'jobs':[{
                 'company_name': basestring,
-                'start_date': basestring,
-                'end_date':  basestring,
+                'startDate': basestring,
+                'endDate':  basestring,
                 'description': basestring,
-                'currently_working': bool
+                'currentlyWorking': bool
                 }],
         'edges': {
             'connections': [basestring],
@@ -54,15 +53,15 @@ class User(Document):
         }
 
     }
-    required_fields = ['first_name','last_name', 'email', 'password', 'role']
+    required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
     
     basic_info_fields = [
-        'first_name',
-        'last_name',
+        'firstName',
+        'lastName',
         'email',
-        'date_joined',
+        'dateJoined',
         'role',
-        'graduation_year',
+        'graduationYear',
         'major',
         'university',
         'description',
@@ -70,17 +69,17 @@ class User(Document):
     ]
 
     default_values = {
-        'date_joined': datetime.datetime.utcnow
+        'dateJoined': datetime.datetime.utcnow
     }
     validators = {
-        'first_name': max_length(50),
-        'last_name': max_length(50),
+        'firstName': max_length(50),
+        'lastName': max_length(50),
         'email': max_length(120),
         'password': max_length(120)
     }
     use_dot_notation = True
     def __repr__(self):
-        return '<User %r>' % (self.first_name)
+        return '<User %r>' % (self.firstName)
 
     #### Required to be implemented for login manager ####
 
@@ -100,14 +99,12 @@ class User(Document):
     ######################################################
 
 def createUser(jsonAttributes):
-    #jsonAttributes = jsonAttributes[:]
     user = Users.User()
-    # swizzle password here
     jsonAttributes['password'] = bcrypt.generate_password_hash(jsonAttributes['password'])
 
     utils.mergeFrom(jsonAttributes, user, User.required_fields)
 
-    not_required = ['graduation_year', 'major', 'university', 'description']
+    not_required = ['graduationYear', 'major', 'university', 'description']
     utils.mergeFrom(jsonAttributes, user, not_required, require=False)
 
     return user

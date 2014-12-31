@@ -47,8 +47,8 @@ def login():
     except:
         e = sys.exc_info()[0]
         return jsonify(error=str(e)),HTTP_400_BAD_REQUEST
-    entry = user.findSingleUser({'email':request_email})
-    if entry != None:
+    entry = user.findSingleUser({'email': request_email})
+    if entry is not None:
         if bcrypt.check_password_hash(entry['password'],request_password):
             login_user(entry)
             obj_id = str(entry._id)
@@ -89,16 +89,15 @@ def signup():
     error = None
     req = request.json
     request_email = req['email']
-    entry = user.findSingleUser({'email':request_email})
-    if entry == None:
+    entry = user.findSingleUser({'email': request_email})
+    if entry is None:
         try:
-            user = user.createUser(req)
-            user.save()
-        except:
-            e = sys.exc_info()[0]
-            return jsonify(error=str(e)),HTTP_400_BAD_REQUEST
-        #login_user(user)
-        return jsonify(loggedIn = True, error = None, _id=str(user._id))
+            new_user = user.createUser(req)
+            new_user.save()
+        except Exception as e:
+            return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
+        #login_user(new_user)
+        return jsonify(loggedIn=True, error=None, _id=str(new_user._id))
     else:
         error = 'Email is already in use'
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
@@ -122,7 +121,7 @@ def logout():
 @login_required
 def userBasicInfo(userid):
     entry = user.findUserByID(userid)
-    if entry==None:
+    if entry is None:
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
@@ -130,24 +129,24 @@ def userBasicInfo(userid):
             utils.mergeFrom(req, entry, user.User.basic_info_fields, require=False)
             entry.save()
         except:
-            return jsonify(error='Invalid key'),HTTP_400_BAD_REQUEST
+            return jsonify(error='Invalid key'), HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK
 
-    else: # GET
+    else:
         return utils.jsonFields(entry, user.User.basic_info_fields)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
 @login_required
 def delete_basic_user_info(userid, attribute):
     entry = user.findUserByID(userid)
-    if entry==None:
+    if entry is None:
         abort(404)
     try:
-        entry[attribute]=None
+        entry[attribute] = None
         entry.save()
     except:
         print sys.exc_info()[0]
-        return jsonify(error='Invalid key or field cannot be deleted'),HTTP_400_BAD_REQUEST
+        return jsonify(error='Invalid key or field cannot be deleted'), HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
     return '', HTTP_200_OK
 
@@ -156,7 +155,7 @@ def delete_basic_user_info(userid, attribute):
 @login_required
 def userDetails(userid):
     entry = user.findUserByID(userid)
-    if entry==None:
+    if entry is None:
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
@@ -164,9 +163,8 @@ def userDetails(userid):
             for detail in req:
                 user.addDetail(entry, detail)
         except:
-            #print req['details']
             print sys.exc_info()[0]
-            return jsonify(error='Invalid detail format'),HTTP_400_BAD_REQUEST
+            return jsonify(error='Invalid detail format'), HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
         return '', HTTP_200_OK
     else:
@@ -176,7 +174,7 @@ def userDetails(userid):
 @login_required
 def deleteDetail(userid, detail_title):
     entry = user.findUserByID(userid)
-    if entry==None:
+    if entry is None:
         abort(404)
 
     if user.removeDetail(entry, detail_title):
@@ -192,11 +190,7 @@ def userEdges(userid):
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
-        #try:
         user.updateEdges(entry, req)
-        #except:
-        #   print sys.exc_info()[0]
-        #    return jsonify(error='Invalid format'),HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK
     else:
         annotated = {'connections': [], 'associations': entry['edges']['associations']} 

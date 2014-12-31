@@ -88,7 +88,7 @@ def signup():
             databaseWrapper.save_entity(new_user)
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        #login_user(new_user)
+        login_user(new_user)
         return jsonify(loggedIn=True, error=None, _id=str(new_user._id))
     else:
         error = 'Email is already in use'

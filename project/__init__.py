@@ -10,12 +10,14 @@ from flask.ext.login import LoginManager
 from mongokit import *
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.cors import CORS
+from elasticsearch import Elasticsearch
 
 ################
 #### config ####
 ################
+DATABASE_NAME = 'thehookemup'
 connection = Connection()
-Users = connection['thehookemup'].Users
+Users = connection[DATABASE_NAME].Users
 ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
 cors = CORS(app, allow_headers=['Origin','Content-Type'],
@@ -28,6 +30,9 @@ app.debug = True
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
+
+#TODO:By default this connects to localhost:9200, in the future we might need to change this
+es=Elasticsearch()
 
 from project.users.views import users_blueprint
 app.register_blueprint(users_blueprint)

@@ -44,7 +44,7 @@ def upload_image():
         try:
             image_blob = crop_image(Image(file=file)).make_blob()
             image_id = create_image(image_blob, user_id)
-            return jsonify(error=None, imageID=str(image_id+'.'+PROFILE_FORMAT))
+            return jsonify(error=None, imageID=str(image_id) + '.' + PROFILE_FORMAT)
         except Exception as e:
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST

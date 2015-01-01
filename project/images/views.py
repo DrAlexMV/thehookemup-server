@@ -1,6 +1,5 @@
-from flask import redirect, render_template, request, \
-    url_for, Blueprint, request, jsonify, session, Response, make_response
-from flask.ext.login import login_required
+from flask import request, Blueprint, request, jsonify, make_response, current_app
+from flask.ext.login import login_user, login_required, logout_user, abort
 from project import bcrypt, ROUTE_PREPEND, utils
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
@@ -33,6 +32,11 @@ def crop_image(image):
     crop.compression_quality = PROFILE_QUALITY
     return crop
 
+# Fix POST hang by giving preflight the OPTIONS OK it needs. Hacky but works.
+@images_blueprint.route(ROUTE_PREPEND+'/image',  methods=['OPTIONS'])
+def handle_preflight():
+    return current_app.make_default_options_response()
+
 @images_blueprint.route(ROUTE_PREPEND+'/image', methods=['POST'])
 @login_required
 def upload_image():
@@ -49,7 +53,7 @@ def upload_image():
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST
 
-@images_blueprint.route(ROUTE_PREPEND+'/image/<imageid>.jpg', methods=['GET'])
+@images_blueprint.route(ROUTE_PREPEND+'/image/<imageid>.'+PROFILE_FORMAT, methods=['GET'])
 @login_required
 def get_image(imageid):
     entry = find_image_by_id(imageid)
@@ -60,7 +64,7 @@ def get_image(imageid):
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
-@images_blueprint.route(ROUTE_PREPEND+'/image/<imageid>.jpg', methods=['DELETE'])
+@images_blueprint.route(ROUTE_PREPEND+'/image/<imageid>.'+PROFILE_FORMAT, methods=['DELETE'])
 @login_required
 def delete_image(imageid):
     entry = find_image_by_id(imageid)

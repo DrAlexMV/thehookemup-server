@@ -71,8 +71,8 @@ def delete_image(imageid):
     if entry is None:
         return '', HTTP_404_NOT_FOUND
 
-    if entry['owner'] != getUserID('me'): # TODO: Add admin override
-        return '', HTTP_401_NOT_AUTHORIZED
+    if str(entry['owner']) != str(getUserID('me')): # TODO: Add admin override
+        return '', HTTP_401_UNAUTHORIZED
 
     entry.delete()
     return '', HTTP_200_OK

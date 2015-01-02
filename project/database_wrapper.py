@@ -30,23 +30,27 @@ def save_user(user):
 
 #TODO: make this search query better, currently returns anything that matches any of the keywords
 def simple_search_database_users(keywords):
-        querystring = ""
-        for key in keywords:
-            querystring+=key+" "
-        query={
-               "query":{
-                   "multi_match": {
-                   "query":                querystring,
-                   "type":                 "best_fields",
-                   "fields":               ['_all'],
-                   "tie_breaker":          0.3,
-                   "minimum_should_match": "5%"
-                }
-             }
+    """
+    Takes a list of keywords to search for, returns a list
+    of user entities that have those keywords in any fields
+    """
+    querystring = ""
+    for key in keywords:
+        querystring+=key+" "
+    query={
+            "query":{
+                "multi_match": {
+                "query":                querystring,
+                "type":                 "most_fields",
+                "fields":               ['_all'],
+                "tie_breaker":          0.3,
+                "minimum_should_match": "5%"
+            }
         }
+    }
 
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query)
-        return res['hits']['hits']
+    res = es.search(index=DATABASE_NAME, doc_type='User', body=query)
+    return res['hits']['hits']
 
 
 #turns the user json into something indexable by elastic search, removes fields like image and password

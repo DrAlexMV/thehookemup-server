@@ -10,16 +10,21 @@ from flask.ext.login import LoginManager
 from mongokit import *
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.cors import CORS
-from elasticsearch import Elasticsearch
+import init_elastic
+from init_elastic import es
 
 ################
 #### config ####
 ################
+
+
+# connect to Mongo
 DATABASE_NAME = 'thehookemup'
 connection = Connection()
 Users = connection[DATABASE_NAME].Users
 DatabaseImages = connection[DATABASE_NAME].DatabaseImages
 
+#misc configuration
 ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
 cors = CORS(app, allow_headers=['Origin','Content-Type', 'Cache-Control', 'X-Requested-With'],
@@ -28,19 +33,16 @@ cors = CORS(app, allow_headers=['Origin','Content-Type', 'Cache-Control', 'X-Req
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 app.debug = True
-
 bcrypt = Bcrypt(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
 
-#TODO:By default this connects to localhost:9200, in the future we might need to change this
-es=Elasticsearch()
 
+#register the blueprints
 from project.users.views import users_blueprint
 from project.images.views import images_blueprint
 app.register_blueprint(users_blueprint)
 app.register_blueprint(images_blueprint)
-
 login_manager.login_view = "users.login"
 
 @login_manager.unauthorized_handler

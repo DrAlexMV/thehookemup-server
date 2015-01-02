@@ -1,7 +1,7 @@
 from flask import redirect, render_template, request, \
     url_for, Blueprint, request, jsonify, session, Response
 from flask.ext.login import login_user, login_required, logout_user, abort
-from project import bcrypt, ROUTE_PREPEND, utils, databaseWrapper
+from project import bcrypt, ROUTE_PREPEND, utils, database_wrapper
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
 import json
@@ -85,7 +85,7 @@ def signup():
     if entry is None:
         try:
             new_user = user.createUser(req)
-            databaseWrapper.save_entity(new_user)
+            database_wrapper.save_entity(new_user)
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         login_user(new_user)
@@ -119,7 +119,7 @@ def userBasicInfo(userid):
         req = request.get_json()
         try:
             utils.mergeFrom(req, entry, user.User.basic_info_fields, require=False)
-            databaseWrapper.save_entity(entry)
+            database_wrapper.save_entity(entry)
         except:
             return jsonify(error='Invalid key'), HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK
@@ -135,7 +135,7 @@ def delete_basic_user_info(userid, attribute):
         abort(404)
     try:
         entry[attribute] = None
-        databaseWrapper.save_entity(entry)
+        database_wrapper.save_entity(entry)
     except:
         print sys.exc_info()[0]
         return jsonify(error='Invalid key or field cannot be deleted'), HTTP_400_BAD_REQUEST

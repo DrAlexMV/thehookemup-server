@@ -4,7 +4,7 @@ import datetime
 from project import connection
 from project import Users
 from project import utils
-from project import databaseWrapper
+from project import database_wrapper
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
 
@@ -141,21 +141,21 @@ def addDetail(user, request_detail):
         detail['content'].append(content)
     user.details.append(detail)
 
-    databaseWrapper.save_entity(user)
+    database_wrapper.save_entity(user)
 
 def removeDetail(user, detail_title):
     i = 0
     for detail in user['details']:
         if detail['title'] == detail_title:
             user['details'].pop(i)
-            databaseWrapper.save_entity(user)
+            database_wrapper.save_entity(user)
             return True
         i=i+1
     return False
 
 def updateEdges(user, new_edges):
     utils.mergeFrom(new_edges, user['edges'], ['associations', 'connections'])
-    databaseWrapper.save_entity(user)
+    database_wrapper.save_entity(user)
 
 ## Normalizes userid to ObjectId
 def getUserID(userid):

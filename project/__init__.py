@@ -41,8 +41,12 @@ login_manager.init_app(app)
 #register the blueprints
 from project.users.views import users_blueprint
 from project.images.views import images_blueprint
+from project.search.views import search_blueprint
 app.register_blueprint(users_blueprint)
 app.register_blueprint(images_blueprint)
+app.register_blueprint(search_blueprint)
+
+
 login_manager.login_view = "users.login"
 
 @login_manager.unauthorized_handler

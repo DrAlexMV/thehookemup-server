@@ -1,4 +1,4 @@
-from project import es, DATABASE_NAME
+from project import es, DATABASE_NAME, Users
 
 
 #TODO: write handling for images (if we want it?)
@@ -48,3 +48,15 @@ def create_simple_userJSON(user_entity):
 #remove a mapping from the database, also removes all associated data
 def delete_mapping(doc_type):
     es.indices.delete_mapping(index=DATABASE_NAME,doc_type=doc_type)
+
+#puts everything from the database into elastic
+def load_database_to_elastic():
+    db_entries=list(Users.User.find())
+    for user in db_entries:
+        try:
+            save_user(user)
+            print 'saved successfully'
+        except Exception as e:
+            print str(e)
+            continue
+

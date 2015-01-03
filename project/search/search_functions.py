@@ -1,7 +1,10 @@
 from project import es, DATABASE_NAME
 
 
-#TODO: make this search query better, currently returns anything that matches any of the keywords
+#TODO: Some things that should be done to make these searches better is to weight
+#TODO: unique words more highly. This is an option in elastic search, and it shouldn't
+#TODO: be difficult to implement.
+
 def simple_search_users(query_string):
     """
     Takes a string of space separated words to query, returns a list

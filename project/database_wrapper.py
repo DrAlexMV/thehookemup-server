@@ -3,7 +3,8 @@ from project import es, DATABASE_NAME
 
 #TODO: write handling for images (if we want it?)
 def save_entity(entity):
-    """All database entities should pass through this method.
+    """
+    All database entities should pass through this method.
     This redirects all database entities to the appropriate handling
     """
     #User specific handling

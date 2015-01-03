@@ -25,26 +25,49 @@ def simple_search_users(query_string):
     return res['hits']['hits']
 
 
-def filtered_search_users(query_string, json_filter):
+def filtered_search_users(query_string, json_filter_list):
     """
     Takes a list of space separated words to query the database
-    and a filter in json format. Returns a list of matching results.
+    and a list of filter in json format, i.e. [{term:filter}].
+    Returns a list of json results ordered by degree of matching.
     """
 
-    query = {
-    "query":
-    {
-    "filtered": {
-        "query":  {  "multi_match": {
-                "query":                query_string,
-                "type":                 "most_fields",
-                "fields":               ["_all"]
+    #if the query string is blank, just search based on the filters
+    if query_string == '' or query_string==None:
+        query = {
+            "query":{
+                "filtered": {
+                    "query":  {
+                        "match_all":{}
+                    },
+                    "filter": {
+                        "bool":{
+                            "must":json_filter_list
+                        }
+                    }
+                }
             }
-                  },
-        "filter": { "term":   json_filter }
         }
-      }
-    }
-    print query
+    else:
+        query = {
+            "query":{
+                "filtered": {
+                    "query":  {
+                        "multi_match": {
+                            "query":               query_string,
+                            "type":                 "most_fields",
+                            "fields":               ["_all"]
+                        }
+                    },
+                    "filter": {
+                        "bool":{
+                            "must":json_filter_list
+                        }
+                    }
+                }
+            }
+        }
+
+    #print query
     res = es.search(index=DATABASE_NAME, doc_type='User', body=query)
     return res['hits']['hits']

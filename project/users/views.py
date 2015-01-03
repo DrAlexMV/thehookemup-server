@@ -174,22 +174,58 @@ def deleteDetail(userid, detail_title):
     else:
         return '', HTTP_404_NOT_FOUND
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/edges', methods=['GET', 'PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/edges', methods=['GET'])
 @login_required
 def userEdges(userid):
     entry = user.findUserByID(userid)
     if entry==None:
         abort(404)
-    if request.method == 'PUT':
-        req = request.get_json()
-        user.updateEdges(entry, req)
-        return '', HTTP_200_OK
-    else:
-        annotated = {'connections': [], 'associations': entry['edges']['associations']} 
-        users_ids = map(ObjectId, entry['edges']['connections'])
-        # populate from users list
-        queried = user.findMultipleUsers({'_id': {'$in': users_ids}})
-        for connection_userid in queried:
-            basicuser = utils.jsonFields(connection_userid, user.User.basic_info_fields, response=False)
-            annotated['connections'].append(basicuser)
-        return jsonify(**annotated)
+
+    annotated = {'connections': [], 'associations': entry['edges']['associations']} 
+    users_ids = map(ObjectId, entry['edges']['connections'])
+    # populate from users list
+    queried = user.findMultipleUsers({'_id': {'$in': users_ids}})
+    for connection_userid in queried:
+        basicuser = utils.jsonFields(connection_userid, user.User.basic_info_fields, response=False)
+        annotated['connections'].append(basicuser)
+    return jsonify(**annotated)
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections', methods=['POST'])
+@login_required
+def add_connection_route(user_id):
+    entry = user.findUserByID(user_id)
+    if entry is None:
+        abort(404)
+
+    req = request.get_json()
+    # TODO: have some system so friend requests are sent
+    connection_id = req.get('user')
+    if connection_id is None:
+        return jsonify(error='missing field \'user\''), HTTP_400_BAD_REQUEST
+
+    connection = user.findUserByID(connection_id)
+
+    if connection is None or str(connection['_id']) == str(entry['_id']):
+        return jsonify(error='bad user'), HTTP_400_BAD_REQUEST
+
+    try:
+        ## TODO: improve specificity of errors
+        user.add_connection(entry, connection)
+        return '{}', HTTP_200_OK
+    except:
+        return '{}', HTTP_500_INTERNAL_SERVER_ERROR
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
+@login_required
+def remove_connection_route(user_id, connection_id):
+    entry = user.findUserByID(user_id)
+    connection = user.findUserByID(connection_id)
+    if entry is None or connection is None:
+        abort(404)
+
+    try:
+        ## TODO: improve specificity of errors
+        user.remove_connection(entry, connection)
+        return '{}', HTTP_200_OK
+    except:
+        return '{}', HTTP_500_INTERNAL_SERVER_ERROR

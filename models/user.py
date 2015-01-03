@@ -153,9 +153,29 @@ def removeDetail(user, detail_title):
         i=i+1
     return False
 
-def updateEdges(user, new_edges):
-    utils.mergeFrom(new_edges, user['edges'], ['associations', 'connections'])
-    database_wrapper.save_entity(user)
+def add_connection(user, connection):
+    user_id = str(user['_id'])
+    connection_id = str(connection['_id'])
+
+    if connection_id in user['edges']['connections']:
+        raise Exception('user already added')
+
+    user['edges']['connections'].append(connection_id)
+    connection['edges']['connections'].append(user_id)
+
+    ## only complete transaction after successful addition to both sides
+    databaseWrapper.save_entity(user)
+    databaseWrapper.save_entity(connection)
+
+def remove_connection(user, connection):
+    connection_id = str(connection['_id'])
+
+    user['edges']['connections'].remove(str(connection['_id']))
+    connection['edges']['connections'].remove(str(user['_id']))
+
+    ## only complete transaction after successful removal from both sides
+    databaseWrapper.save_entity(user)
+    databaseWrapper.save_entity(connection)
 
 ## Normalizes userid to ObjectId
 def getUserID(userid):

@@ -164,8 +164,8 @@ def add_connection(user, connection):
     connection['edges']['connections'].append(user_id)
 
     ## only complete transaction after successful addition to both sides
-    databaseWrapper.save_entity(user)
-    databaseWrapper.save_entity(connection)
+    database_wrapper.save_entity(user)
+    database_wrapper.save_entity(connection)
 
 def remove_connection(user, connection):
     connection_id = str(connection['_id'])
@@ -174,8 +174,8 @@ def remove_connection(user, connection):
     connection['edges']['connections'].remove(str(user['_id']))
 
     ## only complete transaction after successful removal from both sides
-    databaseWrapper.save_entity(user)
-    databaseWrapper.save_entity(connection)
+    database_wrapper.save_entity(user)
+    database_wrapper.save_entity(connection)
 
 ## Normalizes userid to ObjectId
 def getUserID(userid):

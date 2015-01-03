@@ -212,8 +212,8 @@ def add_connection_route(user_id):
         ## TODO: improve specificity of errors
         user.add_connection(entry, connection)
         return '{}', HTTP_200_OK
-    except:
-        return '{}', HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
 @login_required

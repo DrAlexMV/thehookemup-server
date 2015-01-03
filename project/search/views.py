@@ -23,7 +23,7 @@ def search():
     term is the name of the field to be filtered, and filter is the required string for that field.
     For example,
 
-    /api/v1/search?query_string='hardware java ibm'&arg1={"role":"programmer"}&arg2={"firstName":"tanner"}
+    /api/v1/search?query_string=hardware java ibm&arg1={"role":"programmer"}&arg2={"firstName":"tanner"}
 
     will search for all users that have the words hardware, java, and ibm anywhere in their information,
     and it will then filter those results to only results that have the role set to "programmer" and the

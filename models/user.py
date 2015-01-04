@@ -199,3 +199,12 @@ def findSingleUser(mapAttributes):
 def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
+
+# returns a list of json basic users from a list of user ids
+def get_basic_info_from_ids(user_ids):
+    basic_users = []
+    queried = findMultipleUsers({'_id': {'$in': user_ids}})
+    for connection_userid in queried:
+        basicuser = utils.jsonFields(connection_userid, User.basic_info_fields, response=False)
+        basic_users.append(basicuser)
+    return basic_users

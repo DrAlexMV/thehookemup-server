@@ -181,13 +181,10 @@ def userEdges(userid):
     if entry==None:
         abort(404)
 
-    annotated = {'connections': [], 'associations': entry['edges']['associations']} 
-    users_ids = map(ObjectId, entry['edges']['connections'])
-    # populate from users list
-    queried = user.findMultipleUsers({'_id': {'$in': users_ids}})
-    for connection_userid in queried:
-        basicuser = utils.jsonFields(connection_userid, user.User.basic_info_fields, response=False)
-        annotated['connections'].append(basicuser)
+    user_ids = map(ObjectId, entry['edges']['connections'])
+    annotated = {'connections': user.get_basic_info_from_ids(user_ids),
+                 'associations': entry['edges']['associations']}
+
     return jsonify(**annotated)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections', methods=['POST'])

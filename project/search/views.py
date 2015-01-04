@@ -1,7 +1,9 @@
 from flask import request, Blueprint, jsonify
 from flask.ext.login import login_required
 from project import ROUTE_PREPEND, utils
+from models import user
 from flask.ext.api.status import *
+from bson.objectid import ObjectId
 import search_functions
 import ast
 
@@ -53,4 +55,8 @@ def search():
             results = search_functions.filtered_search_users(query_string,filter_json_list)
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-    return jsonify(results=results, error=None)
+
+    ## now turn the queries into basic users
+    user_ids = map(ObjectId, (user['_id'] for user in results))
+    basic_users = user.get_basic_info_from_ids(user_ids)
+    return jsonify(results=basic_users, error=None)

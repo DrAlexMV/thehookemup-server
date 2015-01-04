@@ -35,6 +35,7 @@ def create_simple_userJSON(user_entity):
         "firstName": user_entity.firstName,
         "lastName": user_entity.lastName,
         "role": user_entity.role,
+        "description": user_entity.description,
         "email": user_entity.email,
         "major": user_entity.major,
         "graduationYear": user_entity.graduationYear,

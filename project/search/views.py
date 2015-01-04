@@ -25,7 +25,7 @@ def search():
     term is the name of the field to be filtered, and filter is the required string for that field.
     For example,
 
-    /api/v1/search?query_string=hardware java ibm&arg1={"role":"programmer"}&arg2={"firstName":"tanner"}
+    /api/v1/search?query_string=hardware%20java%20ibm&role=programmer&firstName=tanner
 
     will search for all users that have the words hardware, java, and ibm anywhere in their information,
     and it will then filter those results to only results that have the role set to "programmer" and the
@@ -36,23 +36,23 @@ def search():
     list_filters = []
     try:
         query_string = request.args.get('query_string')
-        arg_index = 0
-        for constraint in request.args:
-            if constraint=='query_string':
+        
+        keyed_queries = {}
+        for constraint, value in request.args.items():
+            if constraint == 'query_string':
                 continue
-            next_term_filter = request.args[constraint]
-            next_term_filter_list = utils.fix_term_filter(ast.literal_eval(next_term_filter))
-            list_filters=list_filters+next_term_filter_list
-        if query_string!=None:
-            query_string=query_string.lower()
-        if list_filters == []:
+
+            keyed_queries[constraint] = value.lower()
+
+        if query_string: # disallow empty strings as well as None
+            query_string = query_string.lower()
+
+        if keyed_queries:
+            results = search_functions.filtered_search_users(query_string, [{'term':keyed_queries}])
+        else:
             #call basic search
             results = search_functions.simple_search_users(query_string)
-        else:
-            filter_json_list = []
-            for filter in list_filters:
-                filter_json_list.append({'term':filter})
-            results = search_functions.filtered_search_users(query_string,filter_json_list)
+
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 

@@ -8,11 +8,15 @@ def mergeFrom(fromData, toData, keysToMerge, require=True):
             raise Exception('Missing required parameter %s' % key)
 
 # gracefully handles errors with incomplete model data.
-def jsonFields(modelInstance, fields, response=True):
+def jsonFields(modelInstance, fields, response=True, extra=None):
     entries = {'error' : None}
+
     for key in fields:
         val = modelInstance.get(key)
         entries[key] = val if (type(val) in [str, int, float] or val is None) else str(val)
+
+    if not extra is None:
+        entries.update(extra)
 
     ## TODO: reporting of incomplete models
     if response:

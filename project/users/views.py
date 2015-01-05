@@ -125,7 +125,7 @@ def userBasicInfo(userid):
         return '', HTTP_200_OK
 
     else:
-        return utils.jsonFields(entry, user.User.basic_info_fields)
+        return user.get_basic_info_with_security(entry)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
 @login_required

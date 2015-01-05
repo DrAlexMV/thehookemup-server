@@ -150,7 +150,7 @@ def userDetails(userid):
     PUT request:
 
     Takes an array of details, adds the details to the list of user details if the titles are unique,
-    otherwise deletes the details with the same titles and overwrites them. An example PUT request is:
+    otherwise returns an error if they are not unique. An example PUT request is:
     PUT
     {"details":[{
             "title": "basestring",
@@ -190,7 +190,7 @@ def userDetails(userid):
     }
 
     A GET request simply returns the entire list of user details.
-    
+
     """
     entry = user.findUserByID(userid)
     if entry is None:

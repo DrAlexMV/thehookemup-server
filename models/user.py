@@ -116,18 +116,50 @@ def createUser(jsonAttributes):
 def addJob(user, jsonAttributes):
     user['jobs'].append(jsonAttributes)
 
+def put_details(user, request_details):
+    for request_detail in request_details['details']:
+        for detail in user['details']:
+            if detail['title']==request_detail['title']:
+                raise Exception("You tried to PUT a detail which has the same title as an existing detail. Titles for details are forced to be unique. To change an existing detail, use PATCH instead of PUT.")
 
-def addDetail(user, request_detail):
+        detail = {}
+        detail['content']=[]
+        detail['title']=request_detail['title']
 
-    i=0
+        for request_content in request_detail['content']:
+            content = {}
+            content['subpoints']=[]
+            content['title']=request_content['title']
+            content['description']=request_content['description']
+            for request_subpoint in request_content['subpoints']:
+                subpoint = {}
+                subpoint['title']=request_subpoint['title']
+                subpoint['description']=request_subpoint['description']
+                content['subpoints'].append(subpoint)
+            detail['content'].append(content)
+        user.details.append(detail)
+
+        database_wrapper.save_entity(user)
+
+
+def patch_detail(user, request):
+    i = 0
+    detail_to_patch = request['patch_detail_title']
+    request_detail=request["detail"]
+    found_element_to_patch = False
     for detail in user['details']:
-        if detail['title']==request_detail['title']:
-            user['details'].pop(i)
+        if detail['title']==detail_to_patch:
+            found_element_to_patch=True
+            list.pop([i])
         i = i+1
+    if found_element_to_patch==False:
+        raise Exception("You tried to PATCH a detail with a title that does not exist. To add a new detail, use PUT.")
+
 
     detail = {}
     detail['content']=[]
     detail['title']=request_detail['title']
+
     for request_content in request_detail['content']:
         content = {}
         content['subpoints']=[]
@@ -142,6 +174,7 @@ def addDetail(user, request_detail):
     user.details.append(detail)
 
     database_wrapper.save_entity(user)
+
 
 def removeDetail(user, detail_title):
     i = 0

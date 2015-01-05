@@ -143,21 +143,73 @@ def delete_basic_user_info(userid, attribute):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT', 'PATCH'])
 @login_required
 def userDetails(userid):
+    """
+    PUT request:
+
+    Takes an array of details, adds the details to the list of user details if the titles are unique,
+    otherwise deletes the details with the same titles and overwrites them. An example PUT request is:
+    PUT
+    {"details":[{
+            "title": "basestring",
+            "content": [{
+                "title": "basestring",
+                "description": "basestring",
+                "subpoints": [{
+                    "title": "basestring",
+                    "description": "basestring"
+                    }]
+
+                }]
+            }]
+    }
+
+
+    PATCH request:
+    PATCH request modifies an existing detail. The patch request must pass the full detail in a field named "detail"
+    and it must pass a field named "patch_detail_title" which is the title of the detail to be updated. An example
+    request is as follows:
+
+    PATCH
+    {
+      "patch_detail_title":"basestring",
+      "detail":{
+            "title": "basestring",
+            "content": [{
+                "title": "basestring",
+                "description": "basestring",
+                "subpoints": [{
+                    "title": "basestring",
+                    "description": "basestring"
+                    }]
+
+                }]
+            }
+    }
+
+    A GET request simply returns the entire list of user details.
+    
+    """
     entry = user.findUserByID(userid)
     if entry is None:
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
+        print req
         try:
-            for detail in req:
-                user.addDetail(entry, detail)
-        except:
-            print sys.exc_info()[0]
-            return jsonify(error='Invalid detail format'), HTTP_400_BAD_REQUEST
+                user.put_details(entry, req)
+        except Exception as e:
+             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
+        return '', HTTP_200_OK
+    elif request.method=='PATCH':
+        req = request.get_json()
+        try:
+            user.patch_detail(entry, req)
+        except Exception as e:
+             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK
     else:
         return Response(json.dumps(entry['details']),  mimetype='application/json')

@@ -11,7 +11,6 @@ def simple_search_users(query_string):
     of user entities that have those keywords in any fields.
     This is to be used when filter params are not specified.
     """
-
     query={
             "query":{
                 "multi_match": {

@@ -60,7 +60,6 @@ class User(Document):
     basic_info_fields = set([
         'firstName',
         'lastName',
-        'email',
         'dateJoined',
         'role',
         'graduationYear',
@@ -232,6 +231,19 @@ def findSingleUser(mapAttributes):
 def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
+
+def is_connection(otherUser):
+    if str(otherUser._id) == str(current_user._id):
+        return True
+    return str(current_user._id) in otherUser.edges.connections
+
+def get_basic_info_with_security(userObject):
+    fields = list(User.basic_info_fields)
+    conn = is_connection(userObject)
+    if conn:
+        fields.append('email')
+
+    return utils.jsonFields(userObject, fields, response = True, extra = { 'isConnection' : conn })
 
 # returns a list of json basic users from a list of user ids
 def get_basic_info_from_ids(user_ids):

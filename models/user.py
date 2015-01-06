@@ -57,7 +57,9 @@ class User(Document):
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
     
-    basic_info_fields = set([
+    acceptable_details = {'skills', 'interests', 'projects'}
+
+    basic_info_fields = {
         'firstName',
         'lastName',
         'dateJoined',
@@ -68,7 +70,7 @@ class User(Document):
         'description',
         'picture',
         '_id'
-    ])
+    }
 
     default_values = {
         'dateJoined': datetime.datetime.utcnow
@@ -115,11 +117,17 @@ def createUser(jsonAttributes):
 def addJob(user, jsonAttributes):
     user['jobs'].append(jsonAttributes)
 
-def put_details(user, request_details):
-    for request_detail in request_details['details']:
-        for detail in user['details']:
-            if detail['title']==request_detail['title']:
+def update_details(user, request_details, patch = False):
+    current_detail_titles = {detail['title'] for detail in user['details']}
+    for request_detail in request_details:
+        if (not patch) and (not request_detail['title'] in User.acceptable_details):
+            raise Exception('Illegal detail: %s'%request_detail['title'])
+
+        if request_detail['title'] in current_detail_titles: # O(1)
+            if not patch:
                 raise Exception("You tried to PUT a detail which has the same title as an existing detail. Titles for details are forced to be unique. To change an existing detail, use PATCH instead of PUT.")
+        elif patch:
+            raise Exception("You tried to PATCH a detail with a title that does not exist. To add a new detail, use PUT.")
 
         detail = {}
         detail['content']=[]
@@ -136,44 +144,18 @@ def put_details(user, request_details):
                 subpoint['description']=request_subpoint['description']
                 content['subpoints'].append(subpoint)
             detail['content'].append(content)
-        user.details.append(detail)
 
-        database_wrapper.save_entity(user)
-
-
-def patch_detail(user, request):
-    i = 0
-    detail_to_patch = request['patch_detail_title']
-    request_detail=request["detail"]
-    found_element_to_patch = False
-    for detail in user['details']:
-        if detail['title']==detail_to_patch:
-            found_element_to_patch=True
-            list.pop([i])
-        i = i+1
-    if found_element_to_patch==False:
-        raise Exception("You tried to PATCH a detail with a title that does not exist. To add a new detail, use PUT.")
-
-
-    detail = {}
-    detail['content']=[]
-    detail['title']=request_detail['title']
-
-    for request_content in request_detail['content']:
-        content = {}
-        content['subpoints']=[]
-        content['title']=request_content['title']
-        content['description']=request_content['description']
-        for request_subpoint in request_content['subpoints']:
-            subpoint = {}
-            subpoint['title']=request_subpoint['title']
-            subpoint['description']=request_subpoint['description']
-            content['subpoints'].append(subpoint)
-        detail['content'].append(content)
-    user.details.append(detail)
+        if patch:
+            # insert into correct index
+            for detail_idx, user_detail in enumerate(user.details):
+                if request_detail['title'] == user_detail['title']:
+                    user.details[detail_idx] = detail
+                    break
+        else:
+            # add to end
+            user.details.append(detail)
 
     database_wrapper.save_entity(user)
-
 
 def removeDetail(user, detail_title):
     i = 0

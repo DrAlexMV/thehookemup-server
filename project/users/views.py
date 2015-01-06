@@ -152,42 +152,37 @@ def userDetails(userid):
     Takes an array of details, adds the details to the list of user details if the titles are unique,
     otherwise returns an error if they are not unique. An example PUT request is:
     PUT
-    {"details":[{
+    [{
+        "title": "basestring",
+        "content": [{
             "title": "basestring",
-            "content": [{
+            "description": "basestring",
+            "subpoints": [{
                 "title": "basestring",
-                "description": "basestring",
-                "subpoints": [{
-                    "title": "basestring",
-                    "description": "basestring"
-                    }]
-
-                }]
+                "description": "basestring"
             }]
-    }
+
+        }]
+    }]
 
 
     PATCH request:
-    PATCH request modifies an existing detail. The patch request must pass the full detail in a field named "detail"
-    and it must pass a field named "patch_detail_title" which is the title of the detail to be updated. An example
-    request is as follows:
+    PATCH request modifies an existing detail(s). The patch request must pass the full detail in a field named "detail"
+
 
     PATCH
-    {
-      "patch_detail_title":"basestring",
-      "detail":{
+    [{
+        "title": "basestring",
+        "content": [{
             "title": "basestring",
-            "content": [{
+            "description": "basestring",
+            "subpoints": [{
                 "title": "basestring",
-                "description": "basestring",
-                "subpoints": [{
-                    "title": "basestring",
-                    "description": "basestring"
-                    }]
+                "description": "basestring"
+            }]
 
-                }]
-            }
-    }
+        }]
+    }]
 
     A GET request simply returns the entire list of user details.
 
@@ -197,9 +192,8 @@ def userDetails(userid):
         abort(404)
     if request.method == 'PUT':
         req = request.get_json()
-        print req
         try:
-                user.put_details(entry, req)
+            user.update_details(entry, req, patch = False)
         except Exception as e:
              return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         #return empty response with 200 status ok
@@ -207,7 +201,7 @@ def userDetails(userid):
     elif request.method=='PATCH':
         req = request.get_json()
         try:
-            user.patch_detail(entry, req)
+            user.update_details(entry, req, patch = True)
         except Exception as e:
              return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         return '', HTTP_200_OK

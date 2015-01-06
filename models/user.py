@@ -112,6 +112,9 @@ def createUser(jsonAttributes):
     optional.remove('_id')
     utils.mergeFrom(jsonAttributes, user, optional, require=False)
 
+    ## give em all the possible details
+    user.details = [{'content':[], 'title': det_title} for det_title in User.acceptable_details]
+
     return user
 
 def addJob(user, jsonAttributes):

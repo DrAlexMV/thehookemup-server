@@ -11,7 +11,8 @@ from mongokit import *
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.cors import CORS
 import init_elastic
-from init_elastic import es
+from elasticsearch import Elasticsearch
+from config import config
 
 ################
 #### config ####
@@ -20,16 +21,24 @@ from init_elastic import es
 
 # connect to Mongo
 DATABASE_NAME = 'thehookemup'
-connection = Connection()
+connection = Connection(config['MONGODB_HOST'],
+                        config['MONGODB_PORT'])
 Users = connection[DATABASE_NAME].Users
 DatabaseImages = connection[DATABASE_NAME].DatabaseImages
+
+# Elastic
+es = Elasticsearch([config['ELASTIC_HOST']],
+                   port=config['ELASTIC_PORT'])
+
+init_elastic.generate_search_structure(es)
+
 
 #misc configuration
 ROUTE_PREPEND='/api/v1'
 app = Flask(__name__)
 cors = CORS(app, allow_headers=['Origin','Content-Type', 'Cache-Control', 'X-Requested-With'],
 	supports_credentials=True,
-	origins='http://localhost:3000')
+	origins=config['ACCEPTED_ORIGINS'])
 app.config['CORS_HEADERS'] = 'Content-Type'
 app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 app.debug = True

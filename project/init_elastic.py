@@ -1,5 +1,8 @@
 def generate_search_structure(es):
-    #tell elastic search what the structure of the user is
+    # create if not already there
+    es.indices.create(index='thehookemup', ignore=400)
+
+    # tell elastic search what the structure of the user is
     es.indices.put_mapping(index='thehookemup',doc_type='User',body={
         "User":{
             "_all" : {"enabled" : True},

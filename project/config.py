@@ -1,5 +1,7 @@
 config = {}
 
+config['HOST'] = 'localhost'
+config['PORT'] = 5000
 config['MONGODB_HOST'] = 'localhost'
 config['MONGODB_PORT'] = 27017
 config['ELASTIC_HOST'] = 'localhost'

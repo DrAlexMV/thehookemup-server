@@ -50,13 +50,14 @@ class User(Document):
                 'currentlyWorking': bool
                 }],
         'edges': {
-            'connections': [basestring],
+            'connections': [{'user': basestring, 'type': basestring}],
             'associations': [basestring]
         }
 
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
     
+    connection_types = {'CONNECTED': 'c', 'PENDING_YOUR_APPROVAL': 'pa', 'SENT': 's'}
     acceptable_details = {'skills', 'interests', 'projects'}
 
     basic_info_fields = {
@@ -170,30 +171,6 @@ def removeDetail(user, detail_title):
         i=i+1
     return False
 
-def add_connection(user, connection):
-    user_id = str(user['_id'])
-    connection_id = str(connection['_id'])
-
-    if connection_id in user['edges']['connections']:
-        raise Exception('user already added')
-
-    user['edges']['connections'].append(connection_id)
-    connection['edges']['connections'].append(user_id)
-
-    ## only complete transaction after successful addition to both sides
-    database_wrapper.save_entity(user)
-    database_wrapper.save_entity(connection)
-
-def remove_connection(user, connection):
-    connection_id = str(connection['_id'])
-
-    user['edges']['connections'].remove(str(connection['_id']))
-    connection['edges']['connections'].remove(str(user['_id']))
-
-    ## only complete transaction after successful removal from both sides
-    database_wrapper.save_entity(user)
-    database_wrapper.save_entity(connection)
-
 ## Normalizes userid to ObjectId
 def getUserID(userid):
     if userid == 'me':
@@ -217,18 +194,113 @@ def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
 
-def is_connection(otherUser):
-    if str(otherUser._id) == str(current_user._id):
-        return True
-    return str(current_user._id) in otherUser.edges.connections
+def get_connections(this_user):
+    connected = User.connection_types['CONNECTED']
+    return [conn['user'] for conn in this_user['edges']['connections'] if conn['type'] == connected]
 
-def get_basic_info_with_security(userObject):
+def get_connection(this_user, other_user_id):
+    other_user_id = str(other_user_id)
+    for conn in this_user['edges']['connections']:
+        if conn['user'] == other_user_id:
+            return conn
+    return None
+
+def connection_type(other_user):
+    me = findUserByID('me')
+    other_user_id = str(other_user._id)
+    if other_user_id == str(me._id):
+        return 'c'
+
+    our_connection = get_connection(me, other_user_id)
+
+    if our_connection:
+        return our_connection['type']
+    else:
+        return ''
+
+def request_connection(other_user):
+    conn_type = connection_type(other_user)
+    me = findUserByID('me')
+
+    if conn_type:
+        raise Exception('user already added')
+
+    sent_request = {'user': str(other_user._id), 'type': User.connection_types['SENT']}
+    pending_approval_request = {'user': str(me._id), 'type': User.connection_types['PENDING_YOUR_APPROVAL']}
+    # add to me
+    me['edges']['connections'].append(sent_request)
+
+    # add to other
+    other_user['edges']['connections'].append(pending_approval_request)
+
+    ## only complete transaction after successful addition to both sides
+    database_wrapper.save_entity(me)
+    database_wrapper.save_entity(other_user)
+
+def confirm_connection(other_user):
+    conn_type = connection_type(other_user)
+    me = findUserByID('me')
+
+    if conn_type != 'pa':
+        raise Exception('user not pending approval')
+
+    get_connection(me, other_user._id)['type'] = User.connection_types['CONNECTED']
+    get_connection(other_user, me._id)['type'] = User.connection_types['CONNECTED']
+
+    ## only complete transaction after successful addition to both sides
+    database_wrapper.save_entity(me)
+    database_wrapper.save_entity(other_user)
+
+def remove_connection(this_user, other_user_id):
+    index = None
+
+    for i, conn in enumerate(this_user['edges']['connections']):
+        if conn['user'] == other_user_id:
+            index = i
+            break
+    else:
+        return False
+    
+    this_user['edges']['connections'].pop(index)
+
+def remove_user_connection(other_user):
+    me = findUserByID('me')
+
+    our_connection = get_connection(me, other_user)
+
+    if our_connection is None:
+        raise Exception('no connection between you and this user')
+
+    current_user_id = str(me._id)
+    other_user_id = str(other_user._id)
+
+    status_me = remove_connection(me, other_user_id)
+    status_other = remove_connection(other_user, current_user_id)
+
+    if not status_me or not status_other:
+        raise Exception('removal failed due to missing links. database likely corrupt')
+
+    ## only complete transaction after successful removal from both sides
+    database_wrapper.save_entity(me)
+    database_wrapper.save_entity(other_user)
+
+# either confirms or requests depending on state of issuer
+def handle_connection(other_user):
+    conn_type = connection_type(other_user)
+    if conn_type == User.connection_types['PENDING_YOUR_APPROVAL']:
+        confirm_connection(other_user)
+    elif conn_type == '':
+        request_connection(other_user)
+    else:
+        raise Exception('invalid action on this user')
+
+def get_basic_info_with_security(userObject): # O(N)
     fields = list(User.basic_info_fields)
-    conn = is_connection(userObject)
-    if conn:
+    conn_type = connection_type(userObject)
+    if conn_type == User.connection_types['CONNECTED']:
         fields.append('email')
 
-    return utils.jsonFields(userObject, fields, response = True, extra = { 'isConnection' : conn })
+    return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
 
 # returns a list of json basic users from a list of user ids
 def get_basic_info_from_ids(user_ids):

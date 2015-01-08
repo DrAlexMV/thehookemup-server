@@ -227,7 +227,7 @@ def userEdges(userid):
     if entry==None:
         abort(404)
 
-    user_ids = map(ObjectId, entry['edges']['connections'])
+    user_ids = map(ObjectId, user.get_connections(entry))
     annotated = {'connections': user.get_basic_info_from_ids(user_ids),
                  'associations': entry['edges']['associations']}
 
@@ -236,24 +236,25 @@ def userEdges(userid):
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections', methods=['POST'])
 @login_required
 def add_connection_route(user_id):
-    entry = user.findUserByID(user_id)
-    if entry is None:
-        abort(404)
+    if user_id != 'me':
+        raise Exception('Not able to add users for other people')
 
     req = request.get_json()
+
     # TODO: have some system so friend requests are sent
     connection_id = req.get('user')
+
     if connection_id is None:
         return jsonify(error='missing field \'user\''), HTTP_400_BAD_REQUEST
 
-    connection = user.findUserByID(connection_id)
+    other_user = user.findUserByID(connection_id)
 
-    if connection is None or str(connection['_id']) == str(entry['_id']):
+    if other_user is None:
         return jsonify(error='bad user'), HTTP_400_BAD_REQUEST
 
     try:
         ## TODO: improve specificity of errors
-        user.add_connection(entry, connection)
+        user.handle_connection(other_user)
         return '{}', HTTP_200_OK
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
@@ -268,7 +269,7 @@ def remove_connection_route(user_id, connection_id):
 
     try:
         ## TODO: improve specificity of errors
-        user.remove_connection(entry, connection)
+        user.remove_user_connection(connection)
         return '{}', HTTP_200_OK
     except:
         return '{}', HTTP_500_INTERNAL_SERVER_ERROR

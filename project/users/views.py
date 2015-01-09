@@ -273,6 +273,20 @@ def get_pending_connections_route(user_id):
 
     return json.dumps(user.get_basic_info_from_ids(user_ids))
 
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/suggested-connections', methods=['GET'])
+@login_required
+def get_suggested_connections_route(user_id):
+    if user_id != 'me':
+        raise Exception('That\'s a strange thing to ask for...')
+
+    entry = user.findUserByID(user_id)
+    if entry == None:
+        abort(404)
+
+    users = user.get_suggested_connections(entry)
+
+    return json.dumps(user.get_basic_info_from_users(users))
+
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
 @login_required
 def remove_connection_route(user_id, connection_id):

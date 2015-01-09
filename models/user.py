@@ -202,6 +202,15 @@ def get_pending_connections(this_user):
     pending = User.connection_types['PENDING_APPROVAL']
     return [conn['user'] for conn in this_user['edges']['connections'] if conn['type'] == pending]
 
+## TODO: Adapt to make less silly. Right now it basically just gets 5 people not in your edges.connections
+## Notes: this returns objects rather than ids
+def get_suggested_connections(this_user):
+    # do this in two steps since I'm not a Mongo Master
+    user_ids = [ObjectId(conn['user']) for conn in this_user.edges.connections]
+    query = {'_id': {'$nin': user_ids}, 'firstName': {'$exists': True }}
+    non_connections = Users.User.find(query, sort = [('picture', -1)], limit = 5)
+    return non_connections
+
 def get_connection(this_user, other_user_id):
     other_user_id = str(other_user_id)
     for conn in this_user['edges']['connections']:
@@ -306,11 +315,14 @@ def get_basic_info_with_security(userObject): # O(N)
 
     return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
 
-# returns a list of json basic users from a list of user ids
-def get_basic_info_from_ids(user_ids):
+def get_basic_info_from_users(users):
     basic_users = []
-    queried = findMultipleUsers({'_id': {'$in': user_ids}})
-    for connection_userid in queried:
-        basicuser = utils.jsonFields(connection_userid, User.basic_info_fields, response=False)
+    for user_object in users:
+        basicuser = utils.jsonFields(user_object, User.basic_info_fields, response=False)
         basic_users.append(basicuser)
     return basic_users
+
+# returns a list of json basic users from a list of user ids
+def get_basic_info_from_ids(user_ids):
+    queried = findMultipleUsers({'_id': {'$in': user_ids}})
+    return get_basic_info_from_users(queried)

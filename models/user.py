@@ -207,6 +207,7 @@ def get_pending_connections(this_user):
 def get_suggested_connections(this_user):
     # do this in two steps since I'm not a Mongo Master
     user_ids = [ObjectId(conn['user']) for conn in this_user.edges.connections]
+    user_ids.append(this_user._id)
     query = {'_id': {'$nin': user_ids}, 'firstName': {'$exists': True }}
     non_connections = Users.User.find(query, sort = [('picture', -1)], limit = 5)
     return non_connections
@@ -275,11 +276,12 @@ def remove_connection(this_user, other_user_id):
         return False
     
     this_user['edges']['connections'].pop(index)
+    return True
 
 def remove_user_connection(other_user):
     me = findUserByID('me')
 
-    our_connection = get_connection(me, other_user)
+    our_connection = get_connection(me, other_user._id)
 
     if our_connection is None:
         raise Exception('no connection between you and this user')

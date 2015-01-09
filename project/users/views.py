@@ -299,5 +299,5 @@ def remove_connection_route(user_id, connection_id):
         ## TODO: improve specificity of errors
         user.remove_user_connection(connection)
         return '{}', HTTP_200_OK
-    except:
-        return '{}', HTTP_500_INTERNAL_SERVER_ERROR
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR

@@ -259,6 +259,20 @@ def add_connection_route(user_id):
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/pending-connections', methods=['GET'])
+@login_required
+def get_pending_connections_route(user_id):
+    if user_id != 'me':
+        raise Exception('That\'s a strange thing to ask for...')
+
+    entry = user.findUserByID(user_id)
+    if entry == None:
+        abort(404)
+
+    user_ids = map(ObjectId, user.get_pending_connections(entry))
+
+    return json.dumps(user.get_basic_info_from_ids(user_ids))
+
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
 @login_required
 def remove_connection_route(user_id, connection_id):

@@ -61,3 +61,21 @@ def load_database_to_elastic():
             print str(e)
             continue
 
+def convert_connection_types():
+    db_entries=list(Users.User.find())
+    for user in db_entries:
+        index = 0
+        converted = False
+        while index < len(user['edges']['connections']):
+            connection = user['edges']['connections'][index]
+            if type(connection) != dict:
+                converted = True
+                user['edges']['connections'][index] = {'user': connection, 'type': 'c'}
+            index += 1
+        if converted:
+            try:
+                user.save()
+                print 'successfully converted ', user['firstName']
+            except Exception as e:
+                print 'failed to convert ', user['firstName'], e
+

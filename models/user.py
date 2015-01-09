@@ -57,7 +57,7 @@ class User(Document):
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
     
-    connection_types = {'CONNECTED': 'c', 'PENDING_YOUR_APPROVAL': 'pa', 'SENT': 's'}
+    connection_types = {'CONNECTED': 'c', 'PENDING_APPROVAL': 'pa', 'SENT': 's'}
     acceptable_details = {'skills', 'interests', 'projects'}
 
     basic_info_fields = {
@@ -198,6 +198,10 @@ def get_connections(this_user):
     connected = User.connection_types['CONNECTED']
     return [conn['user'] for conn in this_user['edges']['connections'] if conn['type'] == connected]
 
+def get_pending_connections(this_user):
+    pending = User.connection_types['PENDING_APPROVAL']
+    return [conn['user'] for conn in this_user['edges']['connections'] if conn['type'] == pending]
+
 def get_connection(this_user, other_user_id):
     other_user_id = str(other_user_id)
     for conn in this_user['edges']['connections']:
@@ -226,7 +230,7 @@ def request_connection(other_user):
         raise Exception('user already added')
 
     sent_request = {'user': str(other_user._id), 'type': User.connection_types['SENT']}
-    pending_approval_request = {'user': str(me._id), 'type': User.connection_types['PENDING_YOUR_APPROVAL']}
+    pending_approval_request = {'user': str(me._id), 'type': User.connection_types['PENDING_APPROVAL']}
     # add to me
     me['edges']['connections'].append(sent_request)
 
@@ -287,7 +291,7 @@ def remove_user_connection(other_user):
 # either confirms or requests depending on state of issuer
 def handle_connection(other_user):
     conn_type = connection_type(other_user)
-    if conn_type == User.connection_types['PENDING_YOUR_APPROVAL']:
+    if conn_type == User.connection_types['PENDING_APPROVAL']:
         confirm_connection(other_user)
     elif conn_type == '':
         request_connection(other_user)

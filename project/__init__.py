@@ -20,6 +20,7 @@ from config import config
 
 
 # connect to Mongo
+print 'connecting to mongodb at: %s %i' % (config['MONGODB_HOST'], config['MONGODB_PORT'])
 DATABASE_NAME = 'thehookemup'
 connection = Connection(config['MONGODB_HOST'],
                         config['MONGODB_PORT'])
@@ -27,6 +28,7 @@ Users = connection[DATABASE_NAME].Users
 DatabaseImages = connection[DATABASE_NAME].DatabaseImages
 
 # Elastic
+print 'connecting to elastic search at: %s %i' % (config['ELASTIC_HOST'], config['ELASTIC_PORT'])
 es = Elasticsearch([config['ELASTIC_HOST']],
                    port=config['ELASTIC_PORT'])
 

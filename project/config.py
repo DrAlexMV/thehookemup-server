@@ -2,8 +2,8 @@ import os
 
 config = {}
 
-system_mongo_host = os.environ.get('$MONGODB_PORT_27017_TCP_ADDR')
-system_elastic_host = os.environ.get('$ELASTIC_PORT_9300_TCP_ADDR')
+system_mongo_host = os.environ.get('MONGODB_PORT_27017_TCP_ADDR')
+system_elastic_host = os.environ.get('ELASTIC_PORT_9300_TCP_ADDR')
 
 config['HOST'] = 'localhost'
 config['PORT'] = 5000

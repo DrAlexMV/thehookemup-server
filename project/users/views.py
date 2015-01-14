@@ -220,16 +220,30 @@ def deleteDetail(userid, detail_title):
     else:
         return '', HTTP_404_NOT_FOUND
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/edges', methods=['GET'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges', methods=['GET'])
 @login_required
-def userEdges(userid):
-    entry = user.findUserByID(userid)
+def userEdges(user_id):
+    entry = user.findUserByID(user_id)
     if entry==None:
         abort(404)
 
-    user_ids = map(ObjectId, user.get_connections(entry))
-    annotated = {'connections': user.get_basic_info_from_ids(user_ids),
-                 'associations': entry['edges']['associations']}
+    suggested_connections = []
+    pending_connections = []
+
+    if user_id == 'me':
+        suggested_connection_users = user.get_suggested_connections(entry)
+        suggested_connections = user.get_basic_info_from_users(suggested_connection_users)
+
+        pending_connection_ids = map(ObjectId, user.get_pending_connections(entry))
+        pending_connections = user.get_basic_info_from_ids(pending_connection_ids)
+
+    connection_ids = map(ObjectId, user.get_connections(entry))
+    connections = user.get_basic_info_from_ids(connection_ids)
+
+    annotated = {'connections': connections,
+                 'suggestedConnections': suggested_connections,
+                 'pendingConnections': pending_connections,
+                 'associations': []}
 
     return jsonify(**annotated)
 
@@ -258,34 +272,6 @@ def add_connection_route(user_id):
         return '{}', HTTP_200_OK
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
-
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/pending-connections', methods=['GET'])
-@login_required
-def get_pending_connections_route(user_id):
-    if user_id != 'me':
-        raise Exception('That\'s a strange thing to ask for...')
-
-    entry = user.findUserByID(user_id)
-    if entry == None:
-        abort(404)
-
-    user_ids = map(ObjectId, user.get_pending_connections(entry))
-
-    return json.dumps(user.get_basic_info_from_ids(user_ids))
-
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/suggested-connections', methods=['GET'])
-@login_required
-def get_suggested_connections_route(user_id):
-    if user_id != 'me':
-        raise Exception('That\'s a strange thing to ask for...')
-
-    entry = user.findUserByID(user_id)
-    if entry == None:
-        abort(404)
-
-    users = user.get_suggested_connections(entry)
-
-    return json.dumps(user.get_basic_info_from_users(users))
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
 @login_required

@@ -15,6 +15,7 @@ def simple_search_users(query_string):
             "query":{
                 "multi_match": {
                 "query":                query_string,
+                "fuzziness": 4,
                 "type":                 "most_fields",
                 "fields":               ['_all'],
                 "tie_breaker":          0.3,
@@ -35,6 +36,7 @@ def filtered_search_users(query_string, json_filter_list):
     """
 
     #if the query string is blank, just search based on the filters
+    #currently unused since we don't support empty string queries
     if query_string == '' or query_string==None:
         query = {
             "query":{
@@ -57,6 +59,7 @@ def filtered_search_users(query_string, json_filter_list):
                     "query":  {
                         "multi_match": {
                             "query":               query_string,
+                            "fuzziness": 4,
                             "type":                 "most_fields",
                             "fields":               ["_all"]
                         }

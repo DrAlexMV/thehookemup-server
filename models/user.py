@@ -7,6 +7,7 @@ from project import utils
 from project import database_wrapper
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
+from flask.ext.api.status import HTTP_401_UNAUTHORIZED
 
 def max_length(length):
     def validate(value):
@@ -328,3 +329,12 @@ def get_basic_info_from_users(users):
 def get_basic_info_from_ids(user_ids):
     queried = findMultipleUsers({'_id': {'$in': user_ids}})
     return get_basic_info_from_users(queried)
+
+# decorator that protects other users from PUT/POST/DELETE on you stuff
+# user_id _must_ be passed in as 'user_id'
+def only_me(function):
+    def inner(*args, **kwargs):
+        if kwargs['user_id'] != 'me':
+            return '{}', HTTP_401_UNAUTHORIZED
+        return function(*args, **kwargs)
+    return inner

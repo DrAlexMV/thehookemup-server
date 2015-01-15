@@ -109,23 +109,30 @@ def logout():
 #UserDetails: /api/user/{userid}/details/
 #UserEdges: /api/user/{userid}/edges/
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>', methods=['GET', 'PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>', methods=['PUT'])
 @login_required
-def userBasicInfo(userid):
-    entry = user.findUserByID(userid)
+@user.only_me
+def userBasicInfo(user_id):
+    entry = user.findUserByID(user_id)
     if entry is None:
         abort(404)
-    if request.method == 'PUT':
-        req = request.get_json()
-        try:
-            utils.mergeFrom(req, entry, user.User.basic_info_fields, require=False)
-            database_wrapper.save_entity(entry)
-        except:
-            return jsonify(error='Invalid key'), HTTP_400_BAD_REQUEST
-        return '', HTTP_200_OK
 
-    else:
-        return user.get_basic_info_with_security(entry)
+    req = request.get_json()
+    try:
+        utils.mergeFrom(req, entry, user.User.basic_info_fields, require=False)
+        database_wrapper.save_entity(entry)
+    except:
+        return jsonify(error='Invalid key'), HTTP_400_BAD_REQUEST
+    return '', HTTP_200_OK
+
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>', methods=['GET'])
+@login_required
+def userBasicInfo(user_id):
+    entry = user.findUserByID(user_id)
+    if entry is None:
+        abort(404)
+    return user.get_basic_info_with_security(entry)
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
 @login_required

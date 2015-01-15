@@ -143,82 +143,106 @@ def delete_basic_user_info(userid, attribute):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET', 'PUT', 'PATCH'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET'])
 @login_required
-def userDetails(userid):
+def get_user_details(userid):
     """
-    PUT request:
 
-    Takes an array of details, adds the details to the list of user details if the titles are unique,
-    otherwise returns an error if they are not unique. An example PUT request is:
+
+    """
+    try:
+        entry = user.findUserByID(userid)
+        if entry is None:
+            return '', HTTP_404_NOT_FOUND
+        return user.get_user_details(entry)
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/skills', methods=['PUT'])
+@login_required
+def put_skills(userid):
+    """
+    Example request:
+
     PUT
-    [{
-        "title": "basestring",
-        "content": [{
-            "title": "basestring",
-            "description": "basestring",
-            "subpoints": [{
-                "title": "basestring",
-                "description": "basestring"
-            }]
+    {
+    "skills":["popping molly", "javascript"]
+    }
 
-        }]
-    }]
-
-
-    PATCH request:
-    PATCH request modifies an existing detail(s). The patch request must pass the full detail in a field named "detail"
-
-
-    PATCH
-    [{
-        "title": "basestring",
-        "content": [{
-            "title": "basestring",
-            "description": "basestring",
-            "subpoints": [{
-                "title": "basestring",
-                "description": "basestring"
-            }]
-
-        }]
-    }]
-
-    A GET request simply returns the entire list of user details.
-
+    returns STATUS_200_OK when successful
     """
-    entry = user.findUserByID(userid)
-    if entry is None:
-        abort(404)
-    if request.method == 'PUT':
+    try:
         req = request.get_json()
-        try:
-            user.update_details(entry, req, patch = False)
-        except Exception as e:
-             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        #return empty response with 200 status ok
-        return '', HTTP_200_OK
-    elif request.method=='PATCH':
-        req = request.get_json()
-        try:
-            user.update_details(entry, req, patch = True)
-        except Exception as e:
-             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        return '', HTTP_200_OK
-    else:
-        return Response(json.dumps(entry['details']),  mimetype='application/json')
+        entry = user.findUserByID(userid)
+        if entry is None:
+            return '', HTTP_404_NOT_FOUND
+        if user.put_skills(entry, req):
+            return '', HTTP_200_OK
+        else:
+            return '', HTTP_400_BAD_REQUEST
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/<detail_title>', methods=['DELETE'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/interests', methods=['PUT'])
 @login_required
-def deleteDetail(userid, detail_title):
-    entry = user.findUserByID(userid)
-    if entry is None:
-        abort(404)
+def put_interests(userid):
+    """
+    Example request:
 
-    if user.removeDetail(entry, detail_title):
-        return '', HTTP_200_OK
-    else:
-        return '', HTTP_404_NOT_FOUND
+    PUT
+    {
+     "interests":[{"title":"some title", "description":"some description"},
+               {"title":"some title 2", "description":"some description 2"}]
+    }
+
+    returns STATUS_200_OK when successful
+    """
+    try:
+        req = request.get_json()
+        entry = user.findUserByID(userid)
+        if entry is None:
+            return '', HTTP_404_NOT_FOUND
+        if user.put_interests(entry, req):
+            return '', HTTP_200_OK
+        else:
+            return '', HTTP_400_BAD_REQUEST
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/projects', methods=['PUT'])
+@login_required
+def put_projects(userid):
+    """
+    Example request:
+
+    PUT
+    {
+    "projects":[{
+            "date": "May 2015",
+            "title": "some project title",
+            "description": "some project description",
+            "details": [{
+                "title": "some project detail title",
+                "description": "some project detail description"
+                        }],
+            "people":["54b797090adfa96230c2c1bb"]
+        }]
+    }
+
+    returns status 200_OK when successful
+    """
+    try:
+        req = request.get_json()
+        entry = user.findUserByID(userid)
+        if entry is None:
+            return '', HTTP_404_NOT_FOUND
+        if user.put_projects(entry, req):
+            return '', HTTP_200_OK
+        else:
+            return '', HTTP_400_BAD_REQUEST
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges', methods=['GET'])
 @login_required

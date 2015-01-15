@@ -66,7 +66,7 @@ def unauthorized():
 
 @app.errorhandler(404)
 def not_found(error=None):
-	return jsonify(error='Not Found'), HTTP_404_NOT_FOUND
+    return jsonify(error='Not Found'), HTTP_404_NOT_FOUND
 
 #TODO: We should probably use _id instead of email for login and out info
 @login_manager.user_loader

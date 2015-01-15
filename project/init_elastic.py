@@ -11,38 +11,35 @@ def generate_search_structure(es):
                 "firstName":{"type":"string"},
                 "lastName":{"type":"string"},
                 "role":{"type":"string"},
-                "details": {
+                "interests":{
+                    "type":"nested",
+                    "properties":{
+                        "title":{"type":"string"},
+                        "description":{"type":"string"}
+                    }
+                },
+                "skills":{"type":"string"},
+                "projects": {
                     "type": "nested",
                     "properties":{
                     "title":{"type":"string"},
-                    "content":{
+                    "description":{"type":"string"},
+                    "details":{
                         "type":"nested",
                         "properties":{
                             "title":{"type":"string"},
                             "description":{"type":"string"},
-                            "subpoints":{
-                                "type":"nested",
-                                "properties":{
-                                    "title":{"type":"string"},
-                                    "description":{"type":"string"}
-                                }
                             }
                         }
+                    }
+                }
 
-                    }
-                }
-            },
-                "jobs":{
-                    "type":"nested",
-                    "properties":{
-                        "companyName": {"type":"string"},
-                        "startDate":{"type":"string"},
-                        "endDate":{"type":"string"},
-                        "description":{"type":"string"},
-                        "currentlyWorking":{"type":"boolean"}
-                    }
-                }
+
+
             }
+
+
         }
+
     })
 

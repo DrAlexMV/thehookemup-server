@@ -5,6 +5,8 @@ from project import es, DATABASE_NAME
 #TODO: unique words more highly. This is an option in elastic search, and it shouldn't
 #TODO: be difficult to implement.
 
+#TODO: Put all these arbitrary parameters in a search config file
+
 def simple_search_users(query_string):
     """
     Takes a string of space separated words to query, returns a list
@@ -76,3 +78,27 @@ def filtered_search_users(query_string, json_filter_list):
     #print query
     res = es.search(index=DATABASE_NAME, doc_type='User', body=query)
     return res['hits']['hits']
+
+#TODO: Implement this
+'''
+def get_suggested_skills(term):
+    query = {
+            "query":{
+                "filtered": {
+                    "query":  {
+                        "multi_match": {
+                            "query":               query_string,
+                            "fuzziness": 4,
+                            "type":                 "most_fields",
+                            "fields":               ["_all"]
+                        }
+                    },
+                    "filter": {
+                        "bool":{
+                            "must":json_filter_list
+                        }
+                    }
+                }
+            }
+        }
+'''

@@ -32,24 +32,21 @@ class User(Document):
         'university': basestring,
         'role': basestring,
         'picture': basestring,
-        'details': [{
+        'interests': [{
             'title': basestring,
-            'content': [{
-                'title': basestring,
-                'description': basestring,
-                'subpoints': [{
-                    'title': basestring,
-                    'description': basestring
-                    }]
-            }]
+            'description': basestring,
         }],
-        'jobs':[{
-                'companyName': basestring,
-                'startDate': basestring,
-                'endDate':  basestring,
-                'description': basestring,
-                'currentlyWorking': bool
-                }],
+        'projects':[{
+            'date': basestring,
+            'title': basestring,
+            'description': basestring,
+            'details': [{
+                'title': basestring,
+                'description': basestring
+                        }],
+            'people':[basestring]
+        }],
+        'skills':[basestring], #tags
         'edges': {
             'connections': [{'user': basestring, 'type': basestring}],
             'associations': [basestring]
@@ -59,7 +56,6 @@ class User(Document):
     required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
     
     connection_types = {'CONNECTED': 'c', 'PENDING_APPROVAL': 'pa', 'SENT': 's'}
-    acceptable_details = {'skills', 'interests', 'projects'}
 
     basic_info_fields = {
         'firstName',
@@ -73,6 +69,13 @@ class User(Document):
         'picture',
         '_id'
     }
+
+    details = {
+        'interests',
+        'projects',
+        'skills'
+    }
+
 
     default_values = {
         'dateJoined': datetime.datetime.utcnow
@@ -107,70 +110,36 @@ class User(Document):
 def createUser(jsonAttributes):
     user = Users.User()
     jsonAttributes['password'] = bcrypt.generate_password_hash(jsonAttributes['password'])
-
     utils.mergeFrom(jsonAttributes, user, User.required_fields)
-
     optional = User.basic_info_fields.difference(User.required_fields)
     optional.remove('_id')
     utils.mergeFrom(jsonAttributes, user, optional, require=False)
 
-    ## give em all the possible details
-    user.details = [{'content':[], 'title': det_title} for det_title in User.acceptable_details]
-
     return user
 
-def addJob(user, jsonAttributes):
-    user['jobs'].append(jsonAttributes)
-
-def update_details(user, request_details, patch = False):
-    current_detail_titles = {detail['title'] for detail in user['details']}
-    for request_detail in request_details:
-        if (not patch) and (not request_detail['title'] in User.acceptable_details):
-            raise Exception('Illegal detail: %s'%request_detail['title'])
-
-        if request_detail['title'] in current_detail_titles: # O(1)
-            if not patch:
-                raise Exception("You tried to PUT a detail which has the same title as an existing detail. Titles for details are forced to be unique. To change an existing detail, use PATCH instead of PUT.")
-        elif patch:
-            raise Exception("You tried to PATCH a detail with a title that does not exist. To add a new detail, use PUT.")
-
-        detail = {}
-        detail['content']=[]
-        detail['title']=request_detail['title']
-
-        for request_content in request_detail['content']:
-            content = {}
-            content['subpoints']=[]
-            content['title']=request_content['title']
-            content['description']=request_content['description']
-            for request_subpoint in request_content['subpoints']:
-                subpoint = {}
-                subpoint['title']=request_subpoint['title']
-                subpoint['description']=request_subpoint['description']
-                content['subpoints'].append(subpoint)
-            detail['content'].append(content)
-
-        if patch:
-            # insert into correct index
-            for detail_idx, user_detail in enumerate(user.details):
-                if request_detail['title'] == user_detail['title']:
-                    user.details[detail_idx] = detail
-                    break
-        else:
-            # add to end
-            user.details.append(detail)
-
+def put_skills(user,req):
+    skills = req.get('skills')
+    user.skills = skills
     database_wrapper.save_entity(user)
+    return True
 
-def removeDetail(user, detail_title):
-    i = 0
-    for detail in user['details']:
-        if detail['title'] == detail_title:
-            user['details'].pop(i)
-            database_wrapper.save_entity(user)
-            return True
-        i=i+1
-    return False
+def put_interests(user, req):
+    interests = req.get('interests')
+    user.interests = interests
+    database_wrapper.save_entity(user)
+    return True
+
+def put_projects(user, req):
+    projects = req.get('projects')
+    user.projects = projects
+    database_wrapper.save_entity(user)
+    return True
+
+def get_user_details(user):
+    fields = list(User.details)
+    conn_type = connection_type(user)
+    return utils.jsonFields(user, fields, response = True, extra = { 'connectionType' : conn_type })
+
 
 ## Normalizes userid to ObjectId
 def getUserID(userid):

@@ -60,3 +60,33 @@ def search():
     user_ids = map(ObjectId, (user['_id'] for user in results))
     basic_users = user.get_basic_info_from_ids(user_ids)
     return jsonify(results=basic_users, error=None)
+
+
+#TODO: Finish writing this
+'''
+@search_blueprint.route(ROUTE_PREPEND+'/search/autocomplete/skills', methods=['POST'])
+@login_required
+def autocomplete_skill():
+    """
+
+    """
+    error = None
+
+    try:
+        terms = []
+        for param_name, param_value in request.args.items():
+            terms.append(param_value.lower())
+
+        if len(terms)==0:
+            raise Exception("You didn't pass any URL parameters!")
+        elif len(terms)==1:
+            if ' ' in terms[0]:
+                raise Exception("Currently multi-word skill suggestions is not supported. Try passing a single word.")
+            return search_functions.get_suggested_skills(terms[0])
+        else:
+            raise Exception("Currently, multi-word skill suggestions is not supported. Try passing a single URL parameter.")
+
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
+
+'''

@@ -30,18 +30,26 @@ def save_user(user):
     es.index(index=DATABASE_NAME, doc_type='User', id=obj_id, body=searchable_entity)
 
 #turns the user json into something indexable by elastic search, removes fields like image and password
+#TODO: In User enumerate the searchable fields and have this function be malleable in accordance with that
 def create_simple_userJSON(user_entity):
+
+    #don't want project dates to be searchable
+    for project in user_entity.projects:
+        del project['date']
+        del project['people']
+        print project
+
     searchable_user = {
         "firstName": user_entity.firstName,
         "lastName": user_entity.lastName,
         "role": user_entity.role,
-        "description": user_entity.description,
+        "skills": user_entity.skills,
+        "projects": user_entity.projects,
         "email": user_entity.email,
         "major": user_entity.major,
         "graduationYear": user_entity.graduationYear,
         "university": user_entity.university,
-        "details": user_entity.details,
-        "jobs": user_entity.jobs
+        "interests": user_entity.interests
     }
     return searchable_user
 

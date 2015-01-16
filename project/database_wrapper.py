@@ -2,7 +2,7 @@ from project import es, DATABASE_NAME, Users, Skills
 import requests
 import json
 
-#TODO: write handling for images (if we want it?)
+
 def save_entity(entity):
     """
     All database entities should pass through this method.
@@ -16,6 +16,7 @@ def save_entity(entity):
     if type(entity).__name__ == 'Skill':
         save_skill(entity)
 
+#TODO: Clean this up, use params from project instead of hardcoding
 def save_skill(skill):
 
     skill.save()

@@ -122,10 +122,10 @@ def createUser(jsonAttributes):
 def get_skills_from_name(list_of_skill_name):
     output = []
     for name in list_of_skill_name:
-        found_skill = skill.findSingleSkill({"name":name})
+        found_skill = skill.find_skill({"name":name})
         if found_skill == None:
             #need to create a new skill
-            output.append(skill.create_skill(name, 1))
+            output.append(skill.create_skill(name, 0))
         else:
             output.append(found_skill)
     return output
@@ -151,7 +151,7 @@ def put_skills(user,req):
             raise Exception("User had reference to skill that doesn't exist")
         else:
             skill.decrement_skill(removed_skill)
-            print 'decremented skill'
+            #print 'decremented skill'
 
     for added_skill in added_skills:
         if added_skill == None:
@@ -159,7 +159,7 @@ def put_skills(user,req):
             raise Exception("Something broke.. Added skill is None?!")
         else:
             skill.increment_skill(added_skill)
-            print 'incremented skill'
+            #print 'incremented skill'
 
     user.skills = [str(put_skill._id) for put_skill in put_skills_list]
     database_wrapper.save_entity(user)

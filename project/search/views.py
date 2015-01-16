@@ -67,6 +67,26 @@ def search():
 @login_required
 def autocomplete_skill():
     """
+    Example:
+
+    GET http://localhost:5000/api/v1/search/autocomplete/skills?text=jav
+
+    returns:
+
+    {
+        "error": null,
+        "results": [{
+            "score" : 10,
+            "text" : "Java"
+        },
+            "score" : 2,
+            "text" : "Javascript"
+        }]
+    }
+
+    Where score is the number of users who have put that skill on their profile. Results are ordered by occurence.
+    In this case, both Java and Javascript match the text "jav" and java has 10 active users who list it as a skill
+    and javascript has 2 active users who list it as a skill.
 
     """
     error = None
@@ -86,3 +106,29 @@ def autocomplete_skill():
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
+
+#TODO: finish this endpoint. Should it query elastic or mongo?
+'''
+@search_blueprint.route(ROUTE_PREPEND+'/search/skills', methods=['GET'])
+@login_required
+def search_skills():
+    """
+
+    """
+    error = None
+
+    try:
+        terms = []
+        for param_name, param_value in request.args.items():
+            terms.append(param_value)
+
+        if len(terms)==0:
+            #query database with empty skills
+        elif len(terms)==1:
+            return jsonify(results=search_functions.get_autocomplete_skills(terms[0]),error=None)
+        else:
+            raise Exception("You passed in multiple URL params. If you want autocomplete for a multi word text, put all the words in one param separated with spaces.")
+
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
+'''

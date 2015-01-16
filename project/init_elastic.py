@@ -48,8 +48,8 @@ def generate_search_structure(es):
 
 
 
-
-    #stupid elastic py doesn't seem to support suggestions
+    #TODO replace hardcoded params
+    #stupid elasticpy doesn't seem to support suggestions
     payload = {
           "mappings":{
             "skill":{
@@ -65,8 +65,8 @@ def generate_search_structure(es):
     }
     headers = {'content-type': 'application/json'}
     r = requests.put("http://localhost:9200/skills", data=json.dumps(payload), headers=headers)
-    print str(r)
-    print r.content
+    #print str(r)
+    #print r.content
 
 
 '''

@@ -35,7 +35,7 @@ def find_skill_by_id(skill_id):
     skill = Skills.Skill.find_one({'_id': ObjectId(skill_id)})
     return skill
 
-def findSingleSkill(mapAttributes):
+def find_skill(mapAttributes):
     entry = Skills.Skill.find_one(mapAttributes)
     return entry
 
@@ -47,7 +47,7 @@ def increment_skill(skill):
 def decrement_skill(skill):
     if skill.occurences==1:
         #delete skill
-        print 'need to delete skill from elastic and database'
+        raise Exception('Tried to delete skill with occurence of 1. Need to figure out how to delete entities from mongo with mongokit.')
     else:
         skill.occurences-=1
     database_wrapper.save_entity(skill)

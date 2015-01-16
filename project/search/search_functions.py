@@ -92,6 +92,4 @@ def get_autocomplete_skills(text):
     }
     headers = {'content-type': 'application/json'}
     res = requests.post("http://localhost:9200/skills/_suggest", data=json.dumps(query), headers=headers)
-    print res.json()
-
     return res.json()['skills'][0]['options']

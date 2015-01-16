@@ -42,3 +42,11 @@ def fix_term_filter(term_filter):
          else:
              output.append({entry:term_filter[entry].lower()})
     return output
+
+
+def arr_diff(a,b):
+     # a = [1,2,3]
+     # b = [2,3,4,5,6]
+     #diff(a,b) = 1
+     b = set(b)
+     return [aa for aa in a if aa not in b]

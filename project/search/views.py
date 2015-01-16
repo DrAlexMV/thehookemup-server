@@ -62,9 +62,8 @@ def search():
     return jsonify(results=basic_users, error=None)
 
 
-#TODO: Finish writing this
-'''
-@search_blueprint.route(ROUTE_PREPEND+'/search/autocomplete/skills', methods=['POST'])
+
+@search_blueprint.route(ROUTE_PREPEND+'/search/autocomplete/skills', methods=['GET'])
 @login_required
 def autocomplete_skill():
     """
@@ -75,18 +74,15 @@ def autocomplete_skill():
     try:
         terms = []
         for param_name, param_value in request.args.items():
-            terms.append(param_value.lower())
+            terms.append(param_value)
 
         if len(terms)==0:
             raise Exception("You didn't pass any URL parameters!")
         elif len(terms)==1:
-            if ' ' in terms[0]:
-                raise Exception("Currently multi-word skill suggestions is not supported. Try passing a single word.")
-            return search_functions.get_suggested_skills(terms[0])
+            return jsonify(results=search_functions.get_autocomplete_skills(terms[0]),error=None)
         else:
-            raise Exception("Currently, multi-word skill suggestions is not supported. Try passing a single URL parameter.")
+            raise Exception("You passed in multiple URL params. If you want autocomplete for a multi word text, put all the words in one param separated with spaces.")
 
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
-'''

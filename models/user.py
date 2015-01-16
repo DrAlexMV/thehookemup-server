@@ -8,6 +8,7 @@ from project import database_wrapper
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
 from flask.ext.api.status import HTTP_401_UNAUTHORIZED
+from flask import jsonify
 import skill
 
 def max_length(length):
@@ -118,16 +119,49 @@ def createUser(jsonAttributes):
 
     return user
 
+def get_skills_from_name(list_of_skill_name):
+    output = []
+    for name in list_of_skill_name:
+        found_skill = skill.findSingleSkill({"name":name})
+        if found_skill == None:
+            #need to create a new skill
+            output.append(skill.create_skill(name, 1))
+        else:
+            output.append(found_skill)
+    return output
+
+def get_skills_from_id(list_of_skill_id):
+    output = []
+    for id in list_of_skill_id:
+        output.append(skill.find_skill_by_id(id))
+    return output
+
+
+#TODO: clean this shit up
 def put_skills(user,req):
     skills = req.get('skills')
-    for skill_id in skills:
-        user_skill = skill.find_skill_by_id(skill_id)
-        if user_skill == {}:
-            #create new skill
-        else:
-            
+    previous_skills_list = get_skills_from_id(user['skills'])
+    put_skills_list = get_skills_from_name(skills)
+    removed_skills = utils.arr_diff(previous_skills_list,put_skills_list)
+    added_skills = utils.arr_diff(put_skills_list,previous_skills_list)
 
-    user.skills = skills
+    for removed_skill in removed_skills:
+        if removed_skill == None:
+            #this should never happen
+            raise Exception("User had reference to skill that doesn't exist")
+        else:
+            skill.decrement_skill(removed_skill)
+            print 'decremented skill'
+
+    for added_skill in added_skills:
+        if added_skill == None:
+            #this should never happen
+            raise Exception("Something broke.. Added skill is None?!")
+        else:
+            skill.increment_skill(added_skill)
+            print 'incremented skill'
+
+    user.skills = [str(put_skill._id) for put_skill in put_skills_list]
     database_wrapper.save_entity(user)
     return True
 
@@ -143,10 +177,19 @@ def put_projects(user, req):
     database_wrapper.save_entity(user)
     return True
 
+#TODO: clean this up, use the details field defined above
 def get_user_details(user):
-    fields = list(User.details)
+    output = {}
+    output['interests']=user['interests']
+    output['skills']=[]
+    for skill_id in user['skills']:
+        output['skills'].append(skill.find_skill_by_id(skill_id)['name'])
+    output['projects']=user['projects']
+    return jsonify(output)
+    '''fields = list(User.details)
     conn_type = connection_type(user)
-    return utils.jsonFields(user, fields, response = True, extra = { 'connectionType' : conn_type })
+    return utils.jsonFields(user, fields, response = True, extra = { 'connectionType' : conn_type })'''
+
 
 
 ## Normalizes userid to ObjectId

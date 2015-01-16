@@ -1,5 +1,6 @@
 from project import es, DATABASE_NAME
-
+import requests
+import json
 
 #TODO: Some things that should be done to make these searches better is to weight
 #TODO: unique words more highly. This is an option in elastic search, and it shouldn't
@@ -79,26 +80,18 @@ def filtered_search_users(query_string, json_filter_list):
     res = es.search(index=DATABASE_NAME, doc_type='User', body=query)
     return res['hits']['hits']
 
-#TODO: Implement this
-'''
-def get_suggested_skills(term):
+
+def get_autocomplete_skills(text):
     query = {
-            "query":{
-                "filtered": {
-                    "query":  {
-                        "multi_match": {
-                            "query":               query_string,
-                            "fuzziness": 4,
-                            "type":                 "most_fields",
-                            "fields":               ["_all"]
-                        }
-                    },
-                    "filter": {
-                        "bool":{
-                            "must":json_filter_list
-                        }
-                    }
-                }
+    "skills" : {
+        "text" : text,
+        "completion" : {
+            "field" : "name_suggest"
             }
         }
-'''
+    }
+    headers = {'content-type': 'application/json'}
+    res = requests.post("http://localhost:9200/skills/_suggest", data=json.dumps(query), headers=headers)
+    print res.json()
+
+    return res.json()['skills'][0]['options']

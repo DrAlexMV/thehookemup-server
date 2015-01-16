@@ -1,3 +1,6 @@
+import requests
+import json
+
 def generate_search_structure(es):
     # create if not already there
     es.indices.create(index='thehookemup', ignore=400)
@@ -42,4 +45,44 @@ def generate_search_structure(es):
         }
 
     })
+
+
+
+
+    #stupid elastic py doesn't seem to support suggestions
+    payload = {
+          "mappings":{
+            "skill":{
+                "properties" : {
+                    "name" : { "type" : "string" },
+                    "name_suggest" : {
+                        "type" :  "completion"
+                    }
+                }
+            }
+
+          }
+    }
+    headers = {'content-type': 'application/json'}
+    r = requests.put("http://localhost:9200/skills", data=json.dumps(payload), headers=headers)
+    print str(r)
+    print r.content
+
+
+'''
+    es.indices.put_mapping(index='thehookemup',doc_type='Skill',body={
+          "mappings":{
+            "Skill":{
+                "properties" : {
+                    "name" : { "type" : "string" },
+                    "frequency" : {"type" : "integer" },
+                    "name_suggest" : {
+                        "type" :  "completion"
+                    }
+                }
+            }
+
+          }
+    })
+    '''
 

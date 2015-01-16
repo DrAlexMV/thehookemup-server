@@ -25,6 +25,7 @@ DATABASE_NAME = 'thehookemup'
 connection = Connection(config['MONGODB_HOST'],
                         config['MONGODB_PORT'])
 Users = connection[DATABASE_NAME].Users
+Skills = connection[DATABASE_NAME].Skills
 DatabaseImages = connection[DATABASE_NAME].DatabaseImages
 
 # Elastic

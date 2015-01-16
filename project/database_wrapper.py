@@ -1,5 +1,6 @@
-from project import es, DATABASE_NAME, Users
-
+from project import es, DATABASE_NAME, Users, Skills
+import requests
+import json
 
 #TODO: write handling for images (if we want it?)
 def save_entity(entity):
@@ -11,7 +12,22 @@ def save_entity(entity):
     if type(entity).__name__ == 'User':
         save_user(entity)
 
+    #Skill specific handling
+    if type(entity).__name__ == 'Skill':
+        save_skill(entity)
 
+def save_skill(skill):
+
+    skill.save()
+    obj_id = str(skill._id)
+    r = requests.delete("http://localhost:9200/skills/skill/"+obj_id)
+    print "first r: " + str(r)+ r.content + '\n'
+    searchable_entity = create_simple_skillJSON(skill)
+    headers = {'content-type': 'application/json'}
+    print json.dumps(searchable_entity)
+    r = requests.put("http://localhost:9200/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
+    print "second r: " +str(r) + r.content + '\n'
+    #es.index(index=DATABASE_NAME, doc_type='Skill', id=obj_id, body=searchable_entity)
 
 def save_user(user):
     """
@@ -53,6 +69,19 @@ def create_simple_userJSON(user_entity):
     }
     return searchable_user
 
+
+
+def create_simple_skillJSON(skill_entity):
+    searchable_skill = {
+        "name": skill_entity.name,
+        "name_suggest" : {
+            "input":[skill_entity.name],
+            "output":skill_entity.name,
+            "weight":skill_entity.occurences
+        }
+    }
+    print skill_entity.occurences
+    return searchable_skill
 
 #remove a mapping from the database, also removes all associated data
 def delete_mapping(doc_type):

@@ -7,6 +7,7 @@ from project import utils
 from project import database_wrapper
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
+import skill
 
 def max_length(length):
     def validate(value):
@@ -118,6 +119,13 @@ def createUser(jsonAttributes):
 
 def put_skills(user,req):
     skills = req.get('skills')
+    for skill_id in skills:
+        user_skill = skill.find_skill_by_id(skill_id)
+        if user_skill == {}:
+            #create new skill
+        else:
+            
+
     user.skills = skills
     database_wrapper.save_entity(user)
     return True

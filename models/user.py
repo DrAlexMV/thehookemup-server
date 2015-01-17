@@ -183,7 +183,15 @@ def get_user_details(user):
     output['skills']=[]
     for skill_id in user['skills']:
         output['skills'].append(skill.find_skill_by_id(skill_id)['name'])
-    output['projects']=user['projects']
+    output['projects'] = []
+
+    # annotate with full basic info
+    for project in user['projects']:
+        p = project.copy()
+        ids =  map(ObjectId, p['people'])
+        p['people'] = get_basic_info_from_ids(ids)
+        output['projects'].append(p)
+
     return jsonify(output)
     '''fields = list(User.details)
     conn_type = connection_type(user)

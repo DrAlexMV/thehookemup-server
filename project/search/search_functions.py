@@ -1,6 +1,7 @@
 from project import es, DATABASE_NAME
 import requests
 import json
+from project.config import config
 
 #TODO: Some things that should be done to make these searches better is to weight
 #TODO: unique words more highly. This is an option in elastic search, and it shouldn't
@@ -132,7 +133,7 @@ def simple_search_skills(text, num_results):
         }
 
     headers = {'content-type': 'application/json'}
-    url = 'http://localhost:9200/skills/_search?size='+str(num_results)
+    url = "http://"+config['ELASTIC_HOST']+":"+str(config['ELASTIC_PORT'])+"/skills/_search?size="+str(num_results)
     res = requests.post(url, data=json.dumps(query), headers=headers)
     unfiltered_results = res.json()['hits']['hits']
     filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurences":result["_source"]["occurences"]}, unfiltered_results)

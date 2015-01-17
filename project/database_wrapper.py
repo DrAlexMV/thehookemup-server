@@ -1,7 +1,7 @@
 from project import es, DATABASE_NAME, Users, Skills
 import requests
 import json
-
+from project.config import config
 
 def save_entity(entity):
     """
@@ -21,13 +21,13 @@ def save_skill(skill):
 
     skill.save()
     obj_id = str(skill._id)
-    r = requests.delete("http://localhost:9200/skills/skill/"+obj_id)
-    print "first r: " + str(r)+ r.content + '\n'
+    r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id)
+    #print "first r: " + str(r)+ r.content + '\n'
     searchable_entity = create_simple_skillJSON(skill)
     headers = {'content-type': 'application/json'}
-    print json.dumps(searchable_entity)
-    r = requests.put("http://localhost:9200/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
-    print "second r: " +str(r) + r.content + '\n'
+    #print json.dumps(searchable_entity)
+    r = requests.put("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
+    #print "second r: " +str(r) + r.content + '\n'
     #es.index(index=DATABASE_NAME, doc_type='Skill', id=obj_id, body=searchable_entity)
 
 def save_user(user):

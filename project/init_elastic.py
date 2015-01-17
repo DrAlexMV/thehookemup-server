@@ -1,5 +1,6 @@
 import requests
 import json
+from project.config import config
 
 def generate_search_structure(es):
     # create if not already there
@@ -65,7 +66,7 @@ def generate_search_structure(es):
           }
     }
     headers = {'content-type': 'application/json'}
-    r = requests.put("http://localhost:9200/skills", data=json.dumps(payload), headers=headers)
+    r = requests.put("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills", data=json.dumps(payload), headers=headers)
     #print str(r)
     #print r.content
 

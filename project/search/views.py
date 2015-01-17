@@ -121,17 +121,22 @@ def search_skills():
         "error": null,
         "results": [{
             "name": "couch",
-            "occurences": 1
+            "occurences": 4
         },
         {
             "name": "cooch",
-            "occurences": 1
+            "occurences": 2
         },
         {
             "name": "couchs",
             "occurences": 1
         }]
     }
+
+    To search for all skills, use
+
+    GET http://localhost:5000/api/v1/search/skills?text=&results=<number of results wanted>
+
     """
 
     try:

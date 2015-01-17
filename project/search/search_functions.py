@@ -93,3 +93,40 @@ def get_autocomplete_skills(text):
     headers = {'content-type': 'application/json'}
     res = requests.post("http://localhost:9200/skills/_suggest", data=json.dumps(query), headers=headers)
     return res.json()['skills'][0]['options']
+
+def simple_search_skills(text, num_results):
+
+    if text=='' or text==None:
+        query = {
+            "sort" : [{
+                "occurences" : {
+                    "order" : "asc"
+                }
+            }],
+            "query" : {
+                "match_all" : {}
+            }
+        }
+    else:
+        query = {
+            "sort" : [{
+                "occurences" : {
+                    "order" : "asc"
+                }
+            }],
+           "query":  {
+                "multi_match": {
+                    "query":               text,
+                    "fuzziness":    4,
+                    "fields":       ["name"]
+                }
+            }
+        }
+
+    headers = {'content-type': 'application/json'}
+    url = 'http://localhost:9200/skills/_search?size='+str(num_results)
+    res = requests.post(url, data=json.dumps(query), headers=headers)
+    unfiltered_results = res.json()['hits']['hits']
+    filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurences":result["_source"]["occurences"]}, unfiltered_results)
+    return filtered_results
+

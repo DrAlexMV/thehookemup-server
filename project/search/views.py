@@ -43,8 +43,7 @@ def search():
                 continue
 
             keyed_queries[constraint] = value.lower()
-
-        if query_string: # disallow empty strings as well as None
+        if query_string is not None:
             query_string = query_string.lower()
 
         if keyed_queries:

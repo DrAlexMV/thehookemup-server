@@ -107,28 +107,39 @@ def autocomplete_skill():
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
 
-#TODO: finish this endpoint. Should it query elastic or mongo?
-'''
 @search_blueprint.route(ROUTE_PREPEND+'/search/skills', methods=['GET'])
 @login_required
 def search_skills():
     """
+    Example request:
 
+    GET http://localhost:5000/api/v1/search/skills?text=couch&results=3
+
+    Example response:
+
+    {
+        "error": null,
+        "results": [{
+            "name": "couch",
+            "occurences": 1
+        },
+        {
+            "name": "cooch",
+            "occurences": 1
+        },
+        {
+            "name": "couchs",
+            "occurences": 1
+        }]
+    }
     """
-    error = None
 
     try:
-        terms = []
-        for param_name, param_value in request.args.items():
-            terms.append(param_value)
+        text_to_search = request.args.get('text')
+        num_results = request.args.get('results')
 
-        if len(terms)==0:
-            #query database with empty skills
-        elif len(terms)==1:
-            return jsonify(results=search_functions.get_autocomplete_skills(terms[0]),error=None)
-        else:
-            raise Exception("You passed in multiple URL params. If you want autocomplete for a multi word text, put all the words in one param separated with spaces.")
+        return jsonify(results=search_functions.simple_search_skills(text_to_search,num_results),error=None)
 
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-'''
+

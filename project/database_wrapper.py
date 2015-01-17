@@ -75,6 +75,7 @@ def create_simple_userJSON(user_entity):
 def create_simple_skillJSON(skill_entity):
     searchable_skill = {
         "name": skill_entity.name,
+        "occurences":skill_entity.occurences,
         "name_suggest" : {
             "input":[skill_entity.name],
             "output":skill_entity.name,

@@ -14,18 +14,26 @@ def simple_search_users(query_string):
     of user entities that have those keywords in any fields.
     This is to be used when filter params are not specified.
     """
-    query={
-            "query":{
-                "multi_match": {
-                "query":                query_string,
-                "fuzziness": 4,
-                "type":                 "most_fields",
-                "fields":               ['_all'],
-                "tie_breaker":          0.3,
-                "minimum_should_match": "5%"
+
+    if query_string=='' or query_string==None:
+        query= {
+            "query" : {
+                "match_all" : {}
             }
         }
-    }
+    else:
+        query={
+                "query":{
+                    "multi_match": {
+                    "query":                query_string,
+                    "fuzziness": 4,
+                    "type":                 "most_fields",
+                    "fields":               ['_all'],
+                    "tie_breaker":          0.3,
+                    "minimum_should_match": "5%"
+                }
+            }
+        }
 
     res = es.search(index=DATABASE_NAME, doc_type='User', body=query)
     return res['hits']['hits']

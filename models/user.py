@@ -32,7 +32,7 @@ class User(Document):
         'major': basestring,
         'description': basestring,
         'university': basestring,
-        'role': basestring,
+        'roles': [basestring],
         'picture': basestring,
         'interests': [{
             'title': basestring,
@@ -55,7 +55,7 @@ class User(Document):
         }
 
     }
-    required_fields = ['firstName', 'lastName', 'email', 'password', 'role']
+    required_fields = ['firstName', 'lastName', 'email', 'password', 'roles']
     
     connection_types = {'CONNECTED': 'c', 'PENDING_APPROVAL': 'pa', 'SENT': 's'}
 
@@ -63,7 +63,7 @@ class User(Document):
         'firstName',
         'lastName',
         'dateJoined',
-        'role',
+        'roles',
         'graduationYear',
         'major',
         'university',

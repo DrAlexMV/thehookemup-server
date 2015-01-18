@@ -14,7 +14,7 @@ def generate_search_structure(es):
                 "email":{"type":"string"},
                 "firstName":{"type":"string"},
                 "lastName":{"type":"string"},
-                "role":{"type":"string"},
+                "roles":{"type":"string"},
                 "interests":{
                     "type":"nested",
                     "properties":{

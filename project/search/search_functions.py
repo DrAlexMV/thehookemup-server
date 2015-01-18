@@ -90,12 +90,13 @@ def filtered_search_users(query_string, json_filter_list):
     return res['hits']['hits']
 
 
-def get_autocomplete_skills(text):
+def get_autocomplete_skills(text, num_results):
     query = {
     "skills" : {
         "text" : text,
         "completion" : {
-            "field" : "name_suggest"
+            "field" : "name_suggest",
+            "size": num_results
             }
         }
     }
@@ -108,7 +109,7 @@ def simple_search_skills(text, num_results):
     if text=='' or text==None:
         query = {
             "sort" : [{
-                "occurences" : {
+                "occurrences" : {
                     "order" : "asc"
                 }
             }],
@@ -119,7 +120,7 @@ def simple_search_skills(text, num_results):
     else:
         query = {
             "sort" : [{
-                "occurences" : {
+                "occurrences" : {
                     "order" : "asc"
                 }
             }],
@@ -136,6 +137,6 @@ def simple_search_skills(text, num_results):
     url = "http://"+config['ELASTIC_HOST']+":"+str(config['ELASTIC_PORT'])+"/skills/_search?size="+str(num_results)
     res = requests.post(url, data=json.dumps(query), headers=headers)
     unfiltered_results = res.json()['hits']['hits']
-    filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurences":result["_source"]["occurences"]}, unfiltered_results)
+    filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurrences":result["_source"]["occurrences"]}, unfiltered_results)
     return filtered_results
 

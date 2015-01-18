@@ -68,7 +68,7 @@ def autocomplete_skill():
     """
     Example:
 
-    GET http://localhost:5000/api/v1/search/autocomplete/skills?text=jav
+    GET http://localhost:5000/api/v1/search/autocomplete/skills?text=jav&results=2
 
     returns:
 
@@ -83,7 +83,7 @@ def autocomplete_skill():
         }]
     }
 
-    Where score is the number of users who have put that skill on their profile. Results are ordered by occurence.
+    Where score is the number of users who have put that skill on their profile. Results are ordered by occurrence.
     In this case, both Java and Javascript match the text "jav" and java has 10 active users who list it as a skill
     and javascript has 2 active users who list it as a skill.
 
@@ -91,16 +91,10 @@ def autocomplete_skill():
     error = None
 
     try:
-        terms = []
-        for param_name, param_value in request.args.items():
-            terms.append(param_value)
+        num_results = request.args.get('results')
+        text_to_search = request.args.get('text')
 
-        if len(terms)==0:
-            raise Exception("You didn't pass any URL parameters!")
-        elif len(terms)==1:
-            return jsonify(results=search_functions.get_autocomplete_skills(terms[0]),error=None)
-        else:
-            raise Exception("You passed in multiple URL params. If you want autocomplete for a multi word text, put all the words in one param separated with spaces.")
+        return jsonify(results=search_functions.get_autocomplete_skills(text_to_search, num_results),error=None)
 
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST

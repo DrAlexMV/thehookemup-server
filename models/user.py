@@ -50,7 +50,8 @@ class User(Document):
         }],
         'skills':[basestring], #tags
         'edges': {
-            'connections': [{'user': basestring, 'type': basestring}],
+            'connections': [{'user': basestring, 'type': basestring, 'message': basestring,
+                             'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
         }
 
@@ -151,7 +152,6 @@ def put_skills(user,req):
             raise Exception("User had reference to skill that doesn't exist")
         else:
             skill.decrement_skill(removed_skill)
-            #print 'decremented skill'
 
     for added_skill in added_skills:
         if added_skill == None:
@@ -159,7 +159,6 @@ def put_skills(user,req):
             raise Exception("Something broke.. Added skill is None?!")
         else:
             skill.increment_skill(added_skill)
-            #print 'incremented skill'
 
     user.skills = [str(put_skill._id) for put_skill in put_skills_list]
     database_wrapper.save_entity(user)
@@ -261,15 +260,16 @@ def connection_type(other_user):
     else:
         return ''
 
-def request_connection(other_user):
+
+def request_connection(other_user, message):
     conn_type = connection_type(other_user)
     me = findUserByID('me')
 
     if conn_type:
         raise Exception('user already added')
 
-    sent_request = {'user': str(other_user._id), 'type': User.connection_types['SENT']}
-    pending_approval_request = {'user': str(me._id), 'type': User.connection_types['PENDING_APPROVAL']}
+    sent_request = {'user': str(other_user._id), 'type': User.connection_types['SENT'], 'message': message, 'date':datetime.datetime.utcnow()}
+    pending_approval_request = {'user': str(me._id), 'type': User.connection_types['PENDING_APPROVAL'], 'message': message, 'date':datetime.datetime.utcnow()}
     # add to me
     me['edges']['connections'].append(sent_request)
 
@@ -328,13 +328,14 @@ def remove_user_connection(other_user):
     database_wrapper.save_entity(me)
     database_wrapper.save_entity(other_user)
 
+
 # either confirms or requests depending on state of issuer
-def handle_connection(other_user):
+def handle_connection(other_user, message):
     conn_type = connection_type(other_user)
     if conn_type == User.connection_types['PENDING_APPROVAL']:
         confirm_connection(other_user)
     elif conn_type == '':
-        request_connection(other_user)
+        request_connection(other_user, message)
     else:
         raise Exception('invalid action on this user')
 

@@ -11,22 +11,22 @@ class Skill(Document):
     __database__ = 'thehookemup'
     structure = {
         'name': basestring,
-        'occurences': int
+        'occurrences': int
         }
-    required_fields = ['name', 'occurences']
+    required_fields = ['name', 'occurrences']
 
     '''default_values = {
-        'occurences': 1
+        'occurrences': 1
     }'''
 
     use_dot_notation = True
     def __repr__(self):
         return '<Skill %r>' % (self.name)
 
-def create_skill(name, occurences):
+def create_skill(name, occurrences):
     skill = Skills.Skill()
     skill['name']=name
-    skill['occurences']=occurences
+    skill['occurrences'] = occurrences
     database_wrapper.save_entity(skill)
     return skill
 
@@ -35,19 +35,21 @@ def find_skill_by_id(skill_id):
     skill = Skills.Skill.find_one({'_id': ObjectId(skill_id)})
     return skill
 
-def find_skill(mapAttributes):
-    entry = Skills.Skill.find_one(mapAttributes)
+
+def find_skill(map_attributes):
+    entry = Skills.Skill.find_one(map_attributes)
     return entry
 
+
 def increment_skill(skill):
-    skill.occurences+=1
+    skill.occurrences += 1
     database_wrapper.save_entity(skill)
+
 
 #TODO: delete skills from elastic and database if decremented to zero
 def decrement_skill(skill):
-    if skill.occurences==1:
-        #delete skill
-        raise Exception('Tried to delete skill with occurence of 1. Need to figure out how to delete entities from mongo with mongokit.')
+    if skill.occurrences == 1:
+       database_wrapper.remove_entity(skill)
     else:
-        skill.occurences-=1
-    database_wrapper.save_entity(skill)
+        skill.occurrences -= 1
+        database_wrapper.save_entity(skill)

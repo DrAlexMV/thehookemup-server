@@ -59,7 +59,7 @@ def create_simple_userJSON(user_entity):
     searchable_user = {
         "firstName": user_entity.firstName,
         "lastName": user_entity.lastName,
-        "role": user_entity.role,
+        "roles": user_entity.roles,
         "skills": user_entity.skills,
         "projects": user_entity.projects,
         "email": user_entity.email,

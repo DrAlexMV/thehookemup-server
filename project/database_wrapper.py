@@ -16,15 +16,29 @@ def save_entity(entity):
     if type(entity).__name__ == 'Skill':
         save_skill(entity)
 
+
+def remove_entity(entity):
+    #Skill specific handling
+    if type(entity).__name__ == 'Skill':
+        remove_skill(entity)
+
+
+def remove_skill(skill):
+    obj_id = str(skill._id)
+    headers = {'content-type': 'application/json'}
+    r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, headers=headers)
+    skill.delete()
+
+
 #TODO: Clean this up, use params from project instead of hardcoding
 def save_skill(skill):
 
     skill.save()
     obj_id = str(skill._id)
-    r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id)
+    headers = {'content-type': 'application/json'}
+    r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, headers=headers)
     #print "first r: " + str(r)+ r.content + '\n'
     searchable_entity = create_simple_skillJSON(skill)
-    headers = {'content-type': 'application/json'}
     #print json.dumps(searchable_entity)
     r = requests.put("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
     #print "second r: " +str(r) + r.content + '\n'
@@ -75,14 +89,14 @@ def create_simple_userJSON(user_entity):
 def create_simple_skillJSON(skill_entity):
     searchable_skill = {
         "name": skill_entity.name,
-        "occurences":skill_entity.occurences,
+        "occurrences":skill_entity.occurrences,
         "name_suggest" : {
             "input":[skill_entity.name],
             "output":skill_entity.name,
-            "weight":skill_entity.occurences
+            "weight":skill_entity.occurrences
         }
     }
-    print skill_entity.occurences
+    #print skill_entity.occurrences
     return searchable_skill
 
 #remove a mapping from the database, also removes all associated data

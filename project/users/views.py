@@ -281,6 +281,7 @@ def add_connection_route(user_id):
 
     # TODO: have some system so friend requests are sent
     connection_id = req.get('user')
+    connection_message = req.get('message')
 
     if connection_id is None:
         return jsonify(error='missing field \'user\''), HTTP_400_BAD_REQUEST
@@ -292,7 +293,7 @@ def add_connection_route(user_id):
 
     try:
         ## TODO: improve specificity of errors
-        user.handle_connection(other_user)
+        user.handle_connection(other_user, connection_message)
         return '{}', HTTP_200_OK
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR

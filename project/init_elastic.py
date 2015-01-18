@@ -56,7 +56,7 @@ def generate_search_structure(es):
             "skill":{
                 "properties" : {
                     "name" : { "type" : "string" },
-                    "occurences": {"type": "integer"},
+                    "occurrences": {"type": "integer"},
                     "name_suggest" : {
                         "type" :  "completion"
                     }

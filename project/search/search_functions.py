@@ -110,7 +110,7 @@ def simple_search_skills(text, num_results):
         query = {
             "sort" : [{
                 "occurrences" : {
-                    "order" : "asc"
+                    "order" : "desc"
                 }
             }],
             "query" : {
@@ -121,7 +121,7 @@ def simple_search_skills(text, num_results):
         query = {
             "sort" : [{
                 "occurrences" : {
-                    "order" : "asc"
+                    "order" : "desc"
                 }
             }],
            "query":  {

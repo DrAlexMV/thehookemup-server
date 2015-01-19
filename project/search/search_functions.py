@@ -15,7 +15,7 @@ class SearchResults:
         self.data = data
         self.metadata = metadata
 
-def simple_search_users(query_string, results_per_page, page_number):
+def simple_search_users(query_string, results_per_page, page):
     """
     Takes a string of space separated words to query, returns a list
     of user entities that have those keywords in any fields.
@@ -40,15 +40,15 @@ def simple_search_users(query_string, results_per_page, page_number):
                 }
             }
         }
-    if page_number == None or results_per_page == None:
+    if page == None or results_per_page == None:
         res = es.search(index=DATABASE_NAME, doc_type='User', body=query)['hits']['hits']
     else:
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page_number*results_per_page, size=results_per_page)['hits']['hits']
+        res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
     number_results = es.count(index=DATABASE_NAME, doc_type='User', body=query)['count']
     return SearchResults(res,{'numberResults': number_results})
 
 
-def filtered_search_users(query_string, json_filter_list, results_per_page, page_number):
+def filtered_search_users(query_string, json_filter_list, results_per_page, page):
     """
     Takes a list of space separated words to query the database
     and a list of filter in json format, i.e. [{term:filter}].
@@ -96,10 +96,10 @@ def filtered_search_users(query_string, json_filter_list, results_per_page, page
         }
 
     #print query
-    if page_number == None or results_per_page == None:
+    if page == None or results_per_page == None:
         res = es.search(index=DATABASE_NAME, doc_type='User', body=query)['hits']['hits']
     else:
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page_number*results_per_page, size=results_per_page)['hits']['hits']
+        res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
     number_results = es.count(index=DATABASE_NAME, doc_type='User', body=query)['count']
     return SearchResults(res,{'number_results': number_results})
 

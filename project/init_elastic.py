@@ -22,7 +22,7 @@ def generate_search_structure(es):
                         "description":{"type":"string"}
                     }
                 },
-                "skills":{"type":"string"},
+                "skills":{"type":"string"}, #in elastic this is the array of skill names
                 "projects": {
                     "type": "nested",
                     "properties":{

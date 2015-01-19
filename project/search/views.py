@@ -25,40 +25,48 @@ def search():
     term is the name of the field to be filtered, and filter is the required string for that field.
     For example,
 
-    /api/v1/search?query_string=hardware%20java%20ibm&role=programmer&firstName=tanner
+    /api/v1/search?query_string=hardware%20java%20ibm&role=programmer&firstName=tanner&results_per_page=5&page_number=7
 
     will search for all users that have the words hardware, java, and ibm anywhere in their information,
     and it will then filter those results to only results that have the role set to "programmer" and the
-    firstName set to "tanner". Results are returned in the form of a list of json results.
+    firstName set to "tanner". Setting the results_per_page and page_number behaves as you would expect it to.
+
+    Results are returned in the form of a list of json results.
 
     """
     error = None
     list_filters = []
     try:
         query_string = request.args.get('query_string')
+        results_per_page = request.args.get('results_per_page')
+        page_number = request.args.get('page_number')
         
         keyed_queries = {}
         for constraint, value in request.args.items():
-            if constraint == 'query_string':
+            if constraint == 'query_string' or constraint == 'results_per_page' or constraint == 'page_number':
                 continue
-
             keyed_queries[constraint] = value.lower()
+
         if query_string is not None:
             query_string = query_string.lower()
+        if results_per_page is not None:
+            results_per_page = int(results_per_page)
+        if page_number is not None:
+            page_number = int(page_number)
 
         if keyed_queries:
-            results = search_functions.filtered_search_users(query_string, [{'term':keyed_queries}])
+            results = search_functions.filtered_search_users(query_string, [{'term':keyed_queries}], results_per_page, page_number)
         else:
             #call basic search
-            results = search_functions.simple_search_users(query_string)
+            results = search_functions.simple_search_users(query_string, results_per_page, page_number)
 
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
     ## now turn the queries into basic users
-    user_ids = map(ObjectId, (user['_id'] for user in results))
+    user_ids = map(ObjectId, (entry['_id'] for entry in results.data))
     basic_users = user.get_basic_info_from_ids(user_ids)
-    return jsonify(results=basic_users, error=None)
+    return jsonify(results=basic_users, metadata=results.metadata, error=None)
 
 
 

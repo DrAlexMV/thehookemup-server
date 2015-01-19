@@ -70,6 +70,7 @@ def create_simple_userJSON(user_entity):
         del project['people']
         print project
 
+    #we want elastic to index users with skills
     skill_names = []
     for skill_id in user_entity.skills:
         skill_names.append(models.skill.find_skill_by_id(skill_id).name)

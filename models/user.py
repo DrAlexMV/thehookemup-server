@@ -228,7 +228,7 @@ def get_connections(this_user):
 
 def get_pending_connections(this_user):
     pending = User.connection_types['PENDING_APPROVAL']
-    return [conn['user'] for conn in this_user['edges']['connections'] if conn['type'] == pending]
+    return [conn for conn in this_user['edges']['connections'] if conn['type'] == pending]
 
 ## TODO: Adapt to make less silly. Right now it basically just gets 5 people not in your edges.connections
 ## Notes: this returns objects rather than ids

@@ -260,13 +260,19 @@ def userEdges(user_id):
 
     suggested_connections = []
     pending_connections = []
+    pending_connections_messages = {}
 
     if user_id == 'me':
         suggested_connection_users = user.get_suggested_connections(entry)
         suggested_connections = user.get_basic_info_from_users(suggested_connection_users)
 
-        pending_connection_ids = map(ObjectId, user.get_pending_connections(entry))
+        pending_connection_ids = map(lambda connection : ObjectId(connection['user']),
+                                     user.get_pending_connections(entry))
+
         pending_connections = user.get_basic_info_from_ids(pending_connection_ids)
+
+        map(lambda connection: pending_connections_messages.update({connection['user']:connection['message']}),
+            user.get_pending_connections(entry))
 
     connection_ids = map(ObjectId, user.get_connections(entry))
     connections = user.get_basic_info_from_ids(connection_ids)
@@ -274,6 +280,7 @@ def userEdges(user_id):
     annotated = {'connections': connections,
                  'suggestedConnections': suggested_connections,
                  'pendingConnections': pending_connections,
+                 'pendingConnectionsMessages': pending_connections_messages,
                  'associations': []}
 
     return jsonify(**annotated)

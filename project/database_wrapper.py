@@ -2,6 +2,7 @@ from project import es, DATABASE_NAME, Users, Skills
 import requests
 import json
 from project.config import config
+import models
 
 def save_entity(entity):
     """
@@ -63,18 +64,21 @@ def save_user(user):
 #turns the user json into something indexable by elastic search, removes fields like image and password
 #TODO: In User enumerate the searchable fields and have this function be malleable in accordance with that
 def create_simple_userJSON(user_entity):
-
     #don't want project dates to be searchable
     for project in user_entity.projects:
         del project['date']
         del project['people']
         print project
 
+    skill_names = []
+    for skill_id in user_entity.skills:
+        skill_names.append(models.skill.find_skill_by_id(skill_id).name)
+
     searchable_user = {
         "firstName": user_entity.firstName,
         "lastName": user_entity.lastName,
         "roles": user_entity.roles,
-        "skills": user_entity.skills,
+        "skills": skill_names,
         "projects": user_entity.projects,
         "email": user_entity.email,
         "major": user_entity.major,
@@ -82,6 +86,7 @@ def create_simple_userJSON(user_entity):
         "university": user_entity.university,
         "interests": user_entity.interests
     }
+
     return searchable_user
 
 

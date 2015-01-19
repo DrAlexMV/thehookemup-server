@@ -45,7 +45,7 @@ def simple_search_users(query_string, results_per_page, page_number):
     else:
         res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page_number*results_per_page, size=results_per_page)['hits']['hits']
     number_results = es.count(index=DATABASE_NAME, doc_type='User', body=query)['count']
-    return SearchResults(res,{'number_results': number_results})
+    return SearchResults(res,{'numberResults': number_results})
 
 
 def filtered_search_users(query_string, json_filter_list, results_per_page, page_number):

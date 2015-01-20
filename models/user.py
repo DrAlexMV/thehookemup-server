@@ -113,6 +113,7 @@ class User(Document):
 def createUser(jsonAttributes):
     user = Users.User()
     jsonAttributes['password'] = bcrypt.generate_password_hash(jsonAttributes['password'])
+    jsonAttributes['email']=jsonAttributes['email'].lower()
     utils.mergeFrom(jsonAttributes, user, User.required_fields)
     optional = User.basic_info_fields.difference(User.required_fields)
     optional.remove('_id')

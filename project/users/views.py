@@ -34,7 +34,7 @@ def login():
     error = None
     req = request.json
     try:
-        request_email = req['email']
+        request_email = req['email'].lower()
         request_password = req['password']
     except:
         e = sys.exc_info()[0]

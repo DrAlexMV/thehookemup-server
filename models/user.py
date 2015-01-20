@@ -218,6 +218,7 @@ def findSingleUser(mapAttributes):
     entry = Users.User.find_one(mapAttributes)
     return entry
 
+#
 def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
@@ -355,9 +356,12 @@ def get_basic_info_from_users(users):
     return basic_users
 
 # returns a list of json basic users from a list of user ids
+#KEEPS THE ORDERING OF THE LIST
 def get_basic_info_from_ids(user_ids):
-    queried = findMultipleUsers({'_id': {'$in': user_ids}})
-    return get_basic_info_from_users(queried)
+    user_list = []
+    for user_id in user_ids:
+        user_list.append(findSingleUser({'_id':user_id}))
+    return get_basic_info_from_users(user_list)
 
 # decorator that protects other users from PUT/POST/DELETE on you stuff
 # user_id _must_ be passed in as 'user_id'

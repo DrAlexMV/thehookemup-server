@@ -15,6 +15,7 @@ class SearchResults:
         self.data = data
         self.metadata = metadata
 
+
 def simple_search_users(query_string, results_per_page, page):
     """
     Takes a string of space separated words to query, returns a list
@@ -22,6 +23,7 @@ def simple_search_users(query_string, results_per_page, page):
     This is to be used when filter params are not specified.
     """
     if query_string==None:
+        #simple query to get all results
         query = {
             "query" : {
                 "match_all" : {}
@@ -30,13 +32,12 @@ def simple_search_users(query_string, results_per_page, page):
     else:
         query = {
                 "query":{
-                    "multi_match": {
-                    "query":                query_string,
-                    "fuzziness": 4,
-                    "type":                 "most_fields",
-                    "fields":               ['_all'],
-                    "tie_breaker":          0.3,
-                    "minimum_should_match": "5%"
+                    "multi_match": { #match against multiple fields
+                    "query":                query_string, #string that was entered in. automatically parsed into words
+                    "fuzziness": 3,  #Levenshtein Edit Distance
+                    "type":                 "most_fields", #combine the score of all matching fields
+                    "fields":               ['_all', "skills^3"], #match against all indexed fields, boost the value of matches with skills
+                    "minimum_should_match": "5%" #at least 5% of the words in query_string should match
                 }
             }
         }
@@ -81,7 +82,7 @@ def filtered_search_users(query_string, json_filter_list, results_per_page, page
                     "query":  {
                         "multi_match": {
                             "query":               query_string,
-                            "fuzziness": 4,
+                            "fuzziness": 3,
                             "type":                 "most_fields",
                             "fields":               ["_all"]
                         }
@@ -152,4 +153,3 @@ def simple_search_skills(text, num_results):
     unfiltered_results = res.json()['hits']['hits']
     filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurrences":result["_source"]["occurrences"]}, unfiltered_results)
     return filtered_results
-

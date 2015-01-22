@@ -4,6 +4,7 @@ from project import connection
 from project import database_wrapper
 from bson.objectid import ObjectId
 from project import utils
+from models import user
 import datetime
 
 @connection.register
@@ -28,7 +29,8 @@ class Startup(Document):
             'asker': basestring, # user id
             'question': basestring,
             'answer': basestring # answer formulated by company
-        }]
+        }],
+        'people': [basestring]
     }
 
     question_status = {'PENDING_ANSWER': 'pa', 'ANSWERED': 'a'}
@@ -52,7 +54,7 @@ def create_startup(user_id, request):
     optional = Startup.basic_info_fields.difference(Startup.required_fields)
     optional.remove('_id')
 
-    utils.mergeFrom(config, startup, optional, require=False)
+    utils.mergeFrom(request, startup, optional, require=False)
 
     database_wrapper.save_entity(startup)
     return startup
@@ -80,7 +82,8 @@ def get_details(startup_object, current_user_id):
         # get only answered messages
         qa = filter(lambda q: q['status'] == Startup.question_status['ANSWERED'], qa)
 
-    return {'qa': qa, 'wall': startup_object.wall}
+    people_info = user.get_basic_info_from_ids(map(ObjectId, startup_object.people))
+    return {'qa': qa, 'wall': startup_object.wall, 'people': people_info}
 
 def post_wall(startup_object, request):
     msg = {'message': request['message'], 'date': datetime.datetime.utcnow(), 'id': str(ObjectId())}
@@ -134,3 +137,8 @@ def remove_question(startup_object, question_id, request):
             return startup_object
 
     raise Exception('Not found')
+
+def put_people(startup_object, request):
+    startup_object.people = request['people']
+    database_wrapper.save_entity(startup_object)
+    return startup_object

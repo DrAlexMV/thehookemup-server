@@ -1,7 +1,8 @@
-from project import es, DATABASE_NAME, Users, Skills
+from project import es, DATABASE_NAME, Users, Skills, Startups
 import requests
 import json
 from project.config import config
+
 import models
 
 def save_entity(entity):
@@ -9,20 +10,24 @@ def save_entity(entity):
     All database entities should pass through this method.
     This redirects all database entities to the appropriate handling
     """
-    #User specific handling
+    #Specific handlings
     if type(entity).__name__ == 'User':
         save_user(entity)
 
-    #Skill specific handling
-    if type(entity).__name__ == 'Skill':
+    elif type(entity).__name__ == 'Skill':
         save_skill(entity)
 
+    elif type(entity).__name__ == 'Startup':
+        save_startup(entity)
+
+    else:
+        raise Exception('Unable to save type of ', type(entity))
 
 def remove_entity(entity):
-    #Skill specific handling
     if type(entity).__name__ == 'Skill':
         remove_skill(entity)
-
+    else:
+        raise Exception('Unable to remove type of ', type(entity))
 
 def remove_skill(skill):
     obj_id = str(skill._id)
@@ -60,6 +65,9 @@ def save_user(user):
     searchable_entity = create_simple_userJSON(user)
     #resave the entity into elastic search
     es.index(index=DATABASE_NAME, doc_type='User', id=obj_id, body=searchable_entity)
+
+def save_startup(startup):
+    startup.save()
 
 #turns the user json into something indexable by elastic search, removes fields like image and password
 #TODO: In User enumerate the searchable fields and have this function be malleable in accordance with that

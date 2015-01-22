@@ -13,6 +13,7 @@ class Startup(Document):
     __database__ = 'thehookemup'
     structure = {
         'name': basestring,
+        'date': datetime.datetime,
         'description': basestring,
         'picture': basestring, # picture mongo id
         'owners': [basestring], # only one for now, add more later
@@ -37,7 +38,7 @@ class Startup(Document):
 
     required_fields = ['name', 'description']
 
-    basic_info_fields = {'name', 'description', 'picture', 'owners', 'categories', '_id'}
+    basic_info_fields = {'name', 'date', 'description', 'picture', 'owners', 'categories', '_id'}
 
     use_dot_notation = True
     def __repr__(self):
@@ -49,6 +50,7 @@ def is_owner(user_id, startup_object):
 def create_startup(user_id, request):
     startup = Startups.Startup()
     utils.mergeFrom(request, startup, Startup.required_fields)
+    startup.date = datetime.datetime.utcnow()
     startup.owners.append(str(user_id))
     
     optional = Startup.basic_info_fields.difference(Startup.required_fields)

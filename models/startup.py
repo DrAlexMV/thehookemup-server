@@ -17,7 +17,7 @@ class Startup(Document):
         'description': basestring,
         'picture': basestring, # picture mongo id
         'owners': [basestring], # only one for now, add more later
-        'categories': [], # ids of categories
+        'categories': [basestring], # ids of categories
         'wall': [{
             'id': basestring,
             'date': datetime.datetime,

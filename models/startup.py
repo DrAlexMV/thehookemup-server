@@ -66,9 +66,10 @@ def find_startup_by_id(startup_id):
     startup = Startups.Startup.find_one({'_id': ObjectId(startup_id)})
     return startup
 
-def get_basic_startup(startup_object):
+def get_basic_startup(startup_object, current_user_id):
     fields = list(Startup.basic_info_fields)
-    return utils.jsonFields(startup_object, fields, response = False)
+    owner = {'isOwner': is_owner(current_user_id, startup_object)}
+    return utils.jsonFields(startup_object, fields, response = False, extra=owner)
 
 def update_basic_startup(startup_object, request):
     fields = list(Startup.basic_info_fields)
@@ -83,6 +84,10 @@ def get_details(startup_object, current_user_id):
     if not is_owner(current_user_id, startup_object):
         # get only answered messages
         qa = filter(lambda q: q['status'] == Startup.question_status['ANSWERED'], qa)
+
+    for qa_item in qa:
+        asker_user = user.findUserByID(ObjectId(qa_item['asker']))
+        qa_item['asker'] = utils.jsonFields(asker_user, user.User.basic_info_fields, response=False)
 
     people_info = user.get_basic_info_from_ids(map(ObjectId, startup_object.people))
     return {'qa': qa, 'wall': startup_object.wall, 'people': people_info}

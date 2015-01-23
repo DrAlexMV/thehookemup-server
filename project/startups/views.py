@@ -70,7 +70,7 @@ def update_basic_startup(startup_id):
 
     try:
         startup.update_basic_startup(startup_object, request.get_json())
-        return jsonify(startup.get_details(startup_object))
+        return jsonify(startup.get_details(startup_object, user_id))
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 

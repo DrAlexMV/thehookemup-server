@@ -14,10 +14,12 @@ class Startup(Document):
     structure = {
         'name': basestring,
         'date': datetime.datetime,
+        'website': basestring,
         'description': basestring,
         'picture': basestring, # picture mongo id
         'owners': [basestring], # only one for now, add more later
         'categories': [basestring], # ids of categories
+        'handles': [{'type': basestring, 'url': basestring}],
         'wall': [{
             'id': basestring,
             'date': datetime.datetime,
@@ -38,7 +40,7 @@ class Startup(Document):
 
     required_fields = ['name', 'description']
 
-    basic_info_fields = {'name', 'date', 'description', 'picture', 'owners', 'categories', '_id'}
+    basic_info_fields = {'name', 'date', 'website', 'handles', 'description', 'picture', 'owners', 'categories', '_id'}
 
     use_dot_notation = True
     def __repr__(self):

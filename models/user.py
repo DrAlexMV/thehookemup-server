@@ -357,12 +357,16 @@ def get_basic_info_from_users(users):
     return basic_users
 
 # returns a list of json basic users from a list of user ids
-#KEEPS THE ORDERING OF THE LIST
-def get_basic_info_from_ids(user_ids):
-    user_list = []
-    for user_id in user_ids:
-        user_list.append(findSingleUser({'_id':user_id}))
-    return get_basic_info_from_users(user_list)
+def get_basic_info_from_ids(user_ids, keep_order=False):
+    queried = findMultipleUsers({'_id': {'$in': user_ids}})
+    if (keep_order):
+        by_id = {user._id : user for user in queried}
+        sorted_queried = []
+        for user_id in user_ids:
+            sorted_queried.append(by_id[user_id])
+        return get_basic_info_from_users(sorted_queried)
+
+    return get_basic_info_from_users(queried)
 
 # decorator that protects other users from PUT/POST/DELETE on you stuff
 # user_id _must_ be passed in as 'user_id'

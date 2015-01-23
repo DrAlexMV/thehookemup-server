@@ -65,7 +65,7 @@ def search():
 
     ## now turn the queries into basic users
     user_ids = map(ObjectId, (entry['_id'] for entry in results.data))
-    basic_users = user.get_basic_info_from_ids(user_ids)
+    basic_users = user.get_basic_info_from_ids(user_ids, keep_order=True)
     return jsonify(results=basic_users, metadata=results.metadata, error=None)
 
 

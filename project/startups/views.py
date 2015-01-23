@@ -28,7 +28,7 @@ def create_startup():
     user_id = getUserID('me')
     try:
         new_startup = startup.create_startup(user_id, request.get_json())
-        return jsonify(startup.get_basic_startup(new_startup))
+        return jsonify(startup.get_basic_startup(new_startup, getUserID('me')))
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
@@ -63,6 +63,7 @@ def get_details(startup_id):
 @login_required
 def update_basic_startup(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
+    user_id = getUserID('me')
 
     no = not_owned(startup_object)
     if not no is None:
@@ -70,7 +71,7 @@ def update_basic_startup(startup_id):
 
     try:
         startup.update_basic_startup(startup_object, request.get_json())
-        return jsonify(startup.get_details(startup_object, user_id))
+        return jsonify(startup.get_basic_startup(startup_object, user_id))
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 

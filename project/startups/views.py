@@ -80,12 +80,13 @@ def update_basic_startup(startup_id):
 def post_wall(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
+    user_id = getUserID('me')
     no = not_owned(startup_object)
     if not no is None:
         return no
 
     try:
-        startup.post_wall(startup_object, request.get_json())
+        startup.post_wall(startup_object, request.get_json(), user_id)
         return '{}'
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST

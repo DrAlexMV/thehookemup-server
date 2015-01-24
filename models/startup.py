@@ -22,6 +22,7 @@ class Startup(Document):
         'handles': [{'type': basestring, 'url': basestring}],
         'wall': [{
             'id': basestring,
+            'user': ObjectId,
             'date': datetime.datetime,
             'message': basestring # messages posted by this company
         }],
@@ -91,11 +92,26 @@ def get_details(startup_object, current_user_id):
         asker_user = user.findUserByID(ObjectId(qa_item['asker']))
         qa_item['asker'] = utils.jsonFields(asker_user, user.User.basic_info_fields, response=False)
 
-    people_info = user.get_basic_info_from_ids(map(ObjectId, startup_object.people))
-    return {'qa': qa, 'wall': startup_object.wall, 'people': people_info}
+    all_people_needed = set()
+    annotated_wall = []
+    for wall_item in startup_object.wall:
+        all_people_needed.add(wall_item['user'])
+        annotated_wall_item = wall_item.copy()
+        annotated_wall_item['user'] = str(annotated_wall_item['user'])
+        annotated_wall.append(annotated_wall_item)
 
-def post_wall(startup_object, request):
-    msg = {'message': request['message'], 'date': datetime.datetime.utcnow(), 'id': str(ObjectId())}
+    users = {}
+    for basic_info in user.get_basic_info_from_ids(list(all_people_needed)):
+        users[basic_info['_id']] = basic_info
+
+    for wall_item in annotated_wall:
+        wall_item['user'] = utils.jsonFields(users[wall_item['user']], user.User.basic_info_fields, response=False)
+
+    people_info = user.get_basic_info_from_ids(map(ObjectId, startup_object.people))
+    return {'qa': qa, 'wall': annotated_wall, 'people': people_info}
+
+def post_wall(startup_object, request, current_user_id):
+    msg = {'user': current_user_id, 'message': request['message'], 'date': datetime.datetime.utcnow(), 'id': str(ObjectId())}
     startup_object.wall.insert(0, msg)
 
     database_wrapper.save_entity(startup_object)

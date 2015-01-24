@@ -86,8 +86,7 @@ def post_wall(startup_id):
         return no
 
     try:
-        startup.post_wall(startup_object, request.get_json(), user_id)
-        return '{}'
+        return jsonify(startup.post_wall(startup_object, request.get_json(), user_id))
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 

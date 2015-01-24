@@ -116,7 +116,8 @@ def post_wall(startup_object, request, current_user_id):
 
     database_wrapper.save_entity(startup_object)
 
-    return startup_object
+    msg['user'] = utils.jsonFields(user.findUserByID(current_user_id), user.User.basic_info_fields, response=False)
+    return msg
 
 def remove_wall(startup_object, post_id, request):
     index = 0

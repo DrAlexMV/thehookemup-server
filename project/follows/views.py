@@ -7,6 +7,7 @@ from bson.json_util import dumps
 
 follows_blueprint = Blueprint('follows', __name__)
 
+
 @follows_blueprint.route(ROUTE_PREPEND + '/follow/<entity_id>/followees', methods=['GET'])
 @login_required
 def entity_followees(entity_id):
@@ -15,6 +16,7 @@ def entity_followees(entity_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
+
 @follows_blueprint.route(ROUTE_PREPEND + '/follow/<entity_id>/followers', methods=['GET'])
 @login_required
 def entity_followers(entity_id):
@@ -22,6 +24,7 @@ def entity_followers(entity_id):
         return dumps({'followers': follow.followers(entity_id=entity_id)})
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
+
 
 @follows_blueprint.route(ROUTE_PREPEND + '/follow/<entity_id>/count', methods=['GET'])
 @login_required
@@ -36,6 +39,7 @@ def follows_count(entity_id):
 @login_required
 def all_follows(entity_id):
     pass
+
 
 @follows_blueprint.route(ROUTE_PREPEND + '/follow', methods=['POST'])
 @login_required

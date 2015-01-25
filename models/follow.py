@@ -3,6 +3,7 @@ from project import Follows
 from mongokit import Document
 from project import connection
 from models.user import getUserID
+from itertools import ifilterfalse
 
 
 @connection.register
@@ -75,6 +76,26 @@ def followers(entity):
 @inject_entity
 def followees(entity):
     return entity['followees'] if entity else None
+
+
+def unfollow(follower_id, followee_id):
+    def find_remove(entity_id, to_remove_id, role):
+        entity = coll.Follow.find_one({'_id': entity_id})
+        entity[role] = ifilterfalse(lambda f: f['_id'] == to_remove_id, entity[role])
+        entity.save()
+
+    find_remove(followee_id, follower_id, 'followee')
+    find_remove(follower_id, followee_id, 'followee')
+
+
+def user_unfollow(entity):
+    pass
+
+
+
+
+
+
 
 
 

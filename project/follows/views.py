@@ -30,7 +30,7 @@ def entity_followers(entity_id):
 @login_required
 def follows_count(entity_id):
     try:
-        return jsonify(follow.count(entity_id=entity_id))
+        return dumps(follow.count(entity_id=entity_id))
     except Exception as e:
         return jsonify({'error': str(e)}, HTTP_400_BAD_REQUEST)
 
@@ -38,7 +38,10 @@ def follows_count(entity_id):
 @follows_blueprint.route(ROUTE_PREPEND + '/follow/<entity_id>', methods=['GET'])
 @login_required
 def all_follows(entity_id):
-    pass
+    try:
+        return dumps(follow.get_all(entity_id=entity_id))
+    except Exception as e:
+        return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
 
 @follows_blueprint.route(ROUTE_PREPEND + '/follow', methods=['POST'])
@@ -47,14 +50,17 @@ def add_user_followee():
     try:
         entity = request.get_json()
         follows = follow.follow_entity(entity['id'], entity['type'])
-        return follows.to_json()
+        return dumps(follows)
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
 
 @follows_blueprint.route(ROUTE_PREPEND + '/follow/<entity_id>', methods=['DELETE'])
 @login_required
-def unfollow_entity():
-    pass
+def unfollow_entity(entity_id):
+    try:
+        return dumps(follow.user_unfollow(entity_id=entity_id))
+    except Exception as e:
+        return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
 

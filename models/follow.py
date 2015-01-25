@@ -21,6 +21,27 @@ class Follow(Document):
 coll = Follows
 
 
+def get_all(entity_id):
+    entity_id = getUserID(entity_id) if entity_id == 'me' else entity_id
+    return coll.Follow.find_one({'_id': ObjectId(entity_id)})
+
+
+def inject_entities(action):
+    def inject(*args, **kwargs):
+        entities = [get_all(entity_id) for entity_id in args]
+        return action(*entities)
+    return inject
+
+
+def inject_entity(action):
+    def inject(*args, **kwargs):
+        entity_id = kwargs['entity_id']
+        if not entity_id:
+            raise Exception('An entity id must be provided')
+        return action(get_all(entity_id))
+    return inject
+
+
 def get_or_create(entity_id, entity_type):
     entity_follows = coll.Follow.find_one({'_id': entity_id})
     if not entity_follows:
@@ -53,14 +74,6 @@ def follow_entity(entity_id, entity_type):
     return entity_follows
 
 
-def inject_entity(action):
-    def inject(*args, **kwargs):
-        entity_id = getUserID('me') if kwargs['entity_id'] == 'me' else kwargs['entity_id']
-        entity = coll.Follow.find_one({'_id': ObjectId(entity_id)})
-        return action(entity)
-    return inject
-
-
 @inject_entity
 def count(entity):
     followee_count = len(entity['followees']) if entity else 0
@@ -78,18 +91,21 @@ def followees(entity):
     return entity['followees'] if entity else None
 
 
-def unfollow(follower_id, followee_id):
-    def find_remove(entity_id, to_remove_id, role):
-        entity = coll.Follow.find_one({'_id': entity_id})
-        entity[role] = ifilterfalse(lambda f: f['_id'] == to_remove_id, entity[role])
+@inject_entities
+def unfollow(follower, followee):
+    def find_remove(entity, to_remove, role):
+        entity[role] = ifilterfalse(lambda f: f['_id'] == to_remove['_id'], entity[role])
         entity.save()
 
-    find_remove(followee_id, follower_id, 'followee')
-    find_remove(follower_id, followee_id, 'followee')
+    find_remove(followee, follower, 'followee')
+    find_remove(follower, followee, 'followee')
+
+    return follower
 
 
+@inject_entity
 def user_unfollow(entity):
-    pass
+    return unfollow(get_all('me'), entity)
 
 
 

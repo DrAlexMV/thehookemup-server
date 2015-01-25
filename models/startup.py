@@ -139,7 +139,7 @@ def add_question(startup_object, request, current_user_id):
         'asker': str(current_user_id)
     }
 
-    startup_object.qa.append(question)
+    startup_object.qa.insert(0, question)
     database_wrapper.save_entity(startup_object)
 
     return startup_object

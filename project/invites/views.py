@@ -18,7 +18,7 @@ invites_blueprint = Blueprint(
 @login_required
 def get_invites():
     '''
-    Gets all the invites for a user
+    Gets all the invites for the currently logged on user
     '''
     try:
         user_id = user.getUserID('me')
@@ -33,7 +33,7 @@ def get_invites():
 @login_required
 def create_invites(number):
     '''
-    Gets all the invites for a user
+    Create <number> of invites for the currently logged in user.
     '''
     try:
         user_id = user.getUserID('me')
@@ -57,7 +57,7 @@ def create_invites(number):
 @login_required
 def consume_invite(invite_code):
     '''
-    Gets all the invites for a user
+    Fills in the consumer field of the code with the current userid
     '''
     try:
         request_error = ''
@@ -76,7 +76,7 @@ def consume_invite(invite_code):
 @login_required
 def validate_invite(invite_code):
     '''
-    Gets all the invites for a user
+    Indicates whether or not a code is valid
     '''
     try:
         try:

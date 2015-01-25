@@ -79,16 +79,18 @@ def validate_invite(invite_code):
     Gets all the invites for a user
     '''
     try:
-        request_error = ''
         try:
             invite_entry = invite.find_invite_by_id(ObjectId(invite_code))
             if invite_entry is None:
                 raise Exception('Code not found')
             if invite_entry.consumerObjectId is not None:
                 raise Exception('Code already used')
+
         except Exception as e:
             return jsonify(error='Invalid Code', status=False), HTTP_400_BAD_REQUEST
+
         return jsonify(error=None, status = True)
+
     except Exception as e:
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST

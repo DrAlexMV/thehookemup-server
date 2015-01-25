@@ -16,10 +16,6 @@ class Invite(Document):
     
     required_fields = ['producerObjectId']
 
-    '''default_values = {
-        'occurrences': 1
-    }'''
-
     use_dot_notation = True
     def __repr__(self):
         return '<Invite %r>' % (self.producerObjectId)
@@ -63,11 +59,3 @@ def consumeInvite(invite_id, consumer_object_id):
     entry['consumerObjectId'] = consumer_object_id
     entry.save()
 
-
-#TODO: delete invites from elastic and database if decremented to zero
-def decrement_invite(invite):
-    if invite.occurrences == 1:
-       database_wrapper.remove_entity(invite)
-    else:
-        invite.occurrences -= 1
-        database_wrapper.save_entity(invite)

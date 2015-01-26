@@ -29,6 +29,7 @@ def get_invites():
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST
 
+
 @invites_blueprint.route(ROUTE_PREPEND+'/invites/create/<number>', methods=['PUT'])
 @login_required
 def create_invites(number):

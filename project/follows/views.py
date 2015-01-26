@@ -39,7 +39,7 @@ def follows_count(entity_id):
 @login_required
 def all_follows(entity_id):
     try:
-        return dumps(follow.get_all(entity_id=entity_id))
+        return dumps(follow.find_follows_by_id(entity_id=entity_id))
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
@@ -49,8 +49,8 @@ def all_follows(entity_id):
 def add_user_followee():
     try:
         entity = request.get_json()
-        follows = follow.follow_entity(entity['id'], entity['type'])
-        return dumps(follows)
+        user_followees = follow.follow_entity(entity['id'], entity['type'])
+        return dumps({'followees': user_followees})
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 

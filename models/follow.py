@@ -2,8 +2,8 @@ from bson.objectid import ObjectId
 from project import Follows
 from mongokit import Document
 from project import connection
-from models.user import getUserID
-from itertools import ifilterfalse
+from models.user import getUserID, findUserByID
+from models.startup import find_startup_by_id
 
 
 @connection.register
@@ -21,14 +21,14 @@ class Follow(Document):
 coll = Follows
 
 
-def get_all(entity_id):
+def find_follows_by_id(entity_id):
     entity_id = getUserID(entity_id) if entity_id == 'me' else entity_id
     return coll.Follow.find_one({'_id': ObjectId(entity_id)})
 
 
 def inject_entities(action):
     def inject(*args, **kwargs):
-        entities = [get_all(entity_id) for entity_id in args]
+        entities = [find_follows_by_id(entity_id) for entity_id in args]
         return action(*entities)
     return inject
 
@@ -38,16 +38,21 @@ def inject_entity(action):
         entity_id = kwargs['entity_id']
         if not entity_id:
             raise Exception('An entity id must be provided')
-        return action(get_all(entity_id))
+        return action(find_follows_by_id(entity_id))
     return inject
 
 
 def get_or_create(entity_id, entity_type):
+    entity_id = getUserID(entity_id) if entity_id == 'me' else entity_id
     entity_follows = coll.Follow.find_one({'_id': entity_id})
     if not entity_follows:
-        entity_follows = coll.Follow()
-        entity_follows['_id'] = entity_id
-        entity_follows['entityType'] = entity_type
+        find = find_startup_by_id if entity_type == 'startup' else findUserByID
+        if find(entity_id):
+            entity_follows = coll.Follow()
+            entity_follows['_id'] = entity_id
+            entity_follows['entityType'] = entity_type
+        else:
+            raise Exception('%s does not exist' % entity_type)
     return entity_follows
 
 
@@ -71,7 +76,7 @@ def follow_entity(entity_id, entity_type):
 
     entity_follows.save()
     user_follows.save()
-    return entity_follows
+    return user_follows['followees']
 
 
 @inject_entity
@@ -94,18 +99,17 @@ def followees(entity):
 @inject_entities
 def unfollow(follower, followee):
     def find_remove(entity, to_remove, role):
-        entity[role] = ifilterfalse(lambda f: f['_id'] == to_remove['_id'], entity[role])
+        entity[role] = filter(lambda f: f['_id'] != to_remove['_id'], entity[role])
         entity.save()
 
-    find_remove(followee, follower, 'followee')
-    find_remove(follower, followee, 'followee')
+    find_remove(followee, follower, 'followers')
+    find_remove(follower, followee, 'followees')
 
     return follower
 
 
-@inject_entity
-def user_unfollow(entity):
-    return unfollow(get_all('me'), entity)
+def user_unfollow(entity_id):
+    return unfollow('me', entity_id)
 
 
 

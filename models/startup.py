@@ -34,7 +34,8 @@ class Startup(Document):
             'question': basestring,
             'answer': basestring # answer formulated by company
         }],
-        'people': [basestring]
+        'people': [basestring],
+        'overview': basestring
     }
 
     question_status = {'PENDING_ANSWER': 'pa', 'ANSWERED': 'a'}
@@ -55,7 +56,8 @@ def create_startup(user_id, request):
     utils.mergeFrom(request, startup, Startup.required_fields)
     startup.date = datetime.datetime.utcnow()
     startup.owners.append(str(user_id))
-    
+    startup.people.append(str(user_id))
+
     optional = Startup.basic_info_fields.difference(Startup.required_fields)
     optional.remove('_id')
 
@@ -108,7 +110,7 @@ def get_details(startup_object, current_user_id):
         wall_item['user'] = utils.jsonFields(users[wall_item['user']], user.User.basic_info_fields, response=False)
 
     people_info = user.get_basic_info_from_ids(map(ObjectId, startup_object.people))
-    return {'qa': qa, 'wall': annotated_wall, 'people': people_info}
+    return {'qa': qa, 'wall': annotated_wall, 'people': people_info, 'overview': startup_object.overview}
 
 def post_wall(startup_object, request, current_user_id):
     msg = {'user': current_user_id, 'message': request['message'], 'date': datetime.datetime.utcnow(), 'id': str(ObjectId())}
@@ -166,5 +168,10 @@ def remove_question(startup_object, question_id, request):
 
 def put_people(startup_object, request):
     startup_object.people = request['people']
+    database_wrapper.save_entity(startup_object)
+    return startup_object
+
+def put_overview(startup_object, request):
+    startup_object.overview = request['overview']
     database_wrapper.save_entity(startup_object)
     return startup_object

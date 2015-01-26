@@ -164,3 +164,18 @@ def update_people(startup_id):
         return '{}'
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
+
+@startups_blueprint.route(ROUTE_PREPEND+'/startup/<startup_id>/details/overview', methods=['PUT'])
+@login_required
+def update_overview(startup_id):
+    startup_object = startup.find_startup_by_id(startup_id)
+
+    no = not_owned(startup_object)
+    if not no is None:
+        return no
+
+    try:
+        startup.put_overview(startup_object, request.get_json())
+        return '{}'
+    except Exception as e:
+        return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST

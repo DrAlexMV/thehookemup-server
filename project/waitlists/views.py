@@ -16,13 +16,11 @@ waitlists_blueprint = Blueprint(
     'waitlists', __name__
 )
 
-
-@waitlists_blueprint.route(ROUTE_PREPEND+'/waitlist', methods=['GET'])
-@login_required
+'''
 def get_waitlist():
-    '''
+
     Gets all the entries in the waitlist sorted by ascending date.
-    '''
+
     try:
         output = []
         cursor = waitlist.find_multiple_waitlists({})
@@ -32,8 +30,8 @@ def get_waitlist():
         return jsonify(error=None, waitlist=output)
     except Exception as e:
             request_error = str(e)
-    return jsonify(error=request_error), HTTP_400_BAD_REQUEST
-
+    return jsonify(error=request_error)#, HTTP_400_BAD_REQUEST
+'''
 
 
 @waitlists_blueprint.route(ROUTE_PREPEND+'/waitlist', methods=['PUT'])

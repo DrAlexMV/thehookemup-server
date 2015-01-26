@@ -5,7 +5,7 @@ from project import bcrypt, ROUTE_PREPEND, utils, database_wrapper
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
 import json
-from models import user
+from models import user, invite
 from flask_oauth import OAuth
 from bson.objectid import ObjectId
 import sys
@@ -78,14 +78,19 @@ def get_facebook_oauth_token():
 
 @users_blueprint.route(ROUTE_PREPEND+'/signup', methods=['POST'])
 def signup():
+    #TODO: comment in lines to enforce invite codes
     error = None
     req = request.json
-    request_email = req['email']
+    request_email = req['email'].lower()
+    print request_email
     entry = user.findSingleUser({'email': request_email})
+    print entry
     if entry is None:
         try:
+            #invite_code = req['inviteCode']
             new_user = user.createUser(req)
             database_wrapper.save_entity(new_user)
+            #invite.consumeInvite(ObjectId(invite_code), str(new_user._id))
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         login_user(new_user)

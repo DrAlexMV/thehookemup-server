@@ -53,13 +53,13 @@ def create_invites(number):
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST
 
-
+'''
 @invites_blueprint.route(ROUTE_PREPEND+'/invites/consume/<invite_code>', methods=['PUT'])
 @login_required
 def consume_invite(invite_code):
-    '''
-    Fills in the consumer field of the code with the current userid
-    '''
+
+    #Fills in the consumer field of the code with the current userid
+
     try:
         request_error = ''
         user_id = str(user.getUserID('me'))
@@ -72,7 +72,7 @@ def consume_invite(invite_code):
     except Exception as e:
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST
-
+'''
 @invites_blueprint.route(ROUTE_PREPEND+'/invites/validate/<invite_code>', methods=['GET'])
 @login_required
 def validate_invite(invite_code):

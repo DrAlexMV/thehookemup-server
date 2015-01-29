@@ -179,6 +179,7 @@ def put_projects(user, req):
     database_wrapper.save_entity(user)
     return True
 
+
 def set_initialization_level(user, initialization_level):
     user['initialization'] = initialization_level
     database_wrapper.save_entity(user)
@@ -352,6 +353,7 @@ def handle_connection(other_user, message):
     else:
         raise Exception('invalid action on this user')
 
+
 def get_basic_info_with_security(userObject): # O(N)
     fields = list(User.basic_info_fields)
     conn_type = connection_type(userObject)
@@ -359,6 +361,7 @@ def get_basic_info_with_security(userObject): # O(N)
         fields.append('email')
 
     return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
+
 
 def get_basic_info_from_users(users):
     basic_users = []

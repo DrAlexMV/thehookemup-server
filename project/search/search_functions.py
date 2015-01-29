@@ -25,8 +25,8 @@ def simple_search_users(query_string, results_per_page, page):
     if query_string==None:
         #simple query to get all results
         query = {
-            "query" : {
-                "match_all" : {}
+            "query": {
+                "match_all": {}
             }
         }
     else:
@@ -102,7 +102,7 @@ def filtered_search_users(query_string, json_filter_list, results_per_page, page
     else:
         res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
     number_results = es.count(index=DATABASE_NAME, doc_type='User', body=query)['count']
-    return SearchResults(res,{'number_results': number_results})
+    return SearchResults(res, {'number_results': number_results})
 
 def get_autocomplete_skills(text, num_results):
     query = {
@@ -123,12 +123,12 @@ def simple_search_skills(text, num_results):
     if text=='' or text==None:
         query = {
             "sort" : [{
-                "occurrences" : {
-                    "order" : "desc"
+                "occurrences": {
+                    "order": "desc"
                 }
             }],
-            "query" : {
-                "match_all" : {}
+            "query": {
+                "match_all": {}
             }
         }
     else:

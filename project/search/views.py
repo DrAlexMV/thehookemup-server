@@ -1,9 +1,10 @@
 from flask import request, Blueprint, jsonify
 from flask.ext.login import login_required
 from project import ROUTE_PREPEND, utils
-from models import user
+from models import user, endorsement
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
+from bson.json_util import dumps
 import search_functions
 import ast
 
@@ -66,8 +67,8 @@ def search():
     ## now turn the queries into basic users
     user_ids = map(ObjectId, (entry['_id'] for entry in results.data))
     basic_users = user.get_basic_info_from_ids(user_ids, keep_order=True)
-    return jsonify(results=basic_users, metadata=results.metadata, error=None)
-
+    endorsement.populate_counts(basic_users)
+    return dumps({'results': basic_users, 'metadata': results.metadata, 'error': None})
 
 
 @search_blueprint.route(ROUTE_PREPEND+'/search/autocomplete/skills', methods=['GET'])

@@ -30,7 +30,7 @@ Startups = connection[DATABASE_NAME].Startups
 DatabaseImages = connection[DATABASE_NAME].DatabaseImages
 Invites = connection[DATABASE_NAME].Invites
 Waitlists = connection[DATABASE_NAME].Waitlists
-Follows = connection[DATABASE_NAME].Follows
+Endorsements = connection[DATABASE_NAME].Endorsements
 
 # Elastic
 print 'connecting to elastic search at: %s %i' % (config['ELASTIC_HOST'], config['ELASTIC_PORT'])
@@ -61,15 +61,15 @@ from project.search.views import search_blueprint
 from project.startups.views import startups_blueprint
 from project.invites.views import invites_blueprint
 from project.waitlists.views import waitlists_blueprint
+from project.endorsements.views import endorsements_blueprint
 
-from project.follows.views import follows_blueprint
 app.register_blueprint(users_blueprint)
 app.register_blueprint(images_blueprint)
 app.register_blueprint(search_blueprint)
 app.register_blueprint(startups_blueprint)
 app.register_blueprint(invites_blueprint)
 app.register_blueprint(waitlists_blueprint)
-app.register_blueprint(follows_blueprint)
+app.register_blueprint(endorsements_blueprint)
 
 login_manager.login_view = "users.login"
 

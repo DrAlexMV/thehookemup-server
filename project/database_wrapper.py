@@ -5,6 +5,7 @@ from project.config import config
 
 import models
 
+
 def save_entity(entity):
     """
     All database entities should pass through this method.
@@ -23,48 +24,47 @@ def save_entity(entity):
     else:
         raise Exception('Unable to save type of ', type(entity))
 
+
 def remove_entity(entity):
     if type(entity).__name__ == 'Skill':
         remove_skill(entity)
     else:
         raise Exception('Unable to remove type of ', type(entity))
 
+
 def remove_skill(skill):
     obj_id = str(skill._id)
     headers = {'content-type': 'application/json'}
-    r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, headers=headers)
+    r = requests.delete("http://"+config['ELASTIC_HOST'] + ':' +
+                        str(config['ELASTIC_PORT']) + "/skills/skill/"+obj_id, headers=headers)
     skill.delete()
 
 
 #TODO: Clean this up, use params from project instead of hardcoding
 def save_skill(skill):
-
     skill.save()
     obj_id = str(skill._id)
     headers = {'content-type': 'application/json'}
     r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, headers=headers)
     searchable_entity = create_simple_skillJSON(skill)
     r = requests.put("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
-    #es.index(index=DATABASE_NAME, doc_type='Skill', id=obj_id, body=searchable_entity)
+
+
+def save_to_elastic(entity, doc_type, body_to_save):
+    entity_id = str(entity.get("_id"))
+    es.delete(index=DATABASE_NAME, doc_type=doc_type, id=entity_id, ignore=[400, 404])
+    es.index(index=DATABASE_NAME, doc_type=doc_type, id=entity_id, body=body_to_save)
+
 
 def save_user(user):
-    """
-    Saves a user to the user mongo database,
-    puts the relevant data into elastic,
-    overwriting the existing data in elastic for the user
-    """
-    #save to mongo
     user.save()
-    obj_id = str(user._id)
-    #delete the entity from elastic search if it already exists
-    es.delete(index=DATABASE_NAME,doc_type='User', id=obj_id, ignore=[400, 404])
-    #get json user object with some fields removed for saving into elastic
-    searchable_entity = create_simple_userJSON(user)
-    #resave the entity into elastic search
-    es.index(index=DATABASE_NAME, doc_type='User', id=obj_id, body=searchable_entity)
+    save_to_elastic(user, 'User', create_simple_userJSON(user))
+
 
 def save_startup(startup):
     startup.save()
+    save_to_elastic(startup, 'Startup', startup.to_searchable())
+
 
 #turns the user json into something indexable by elastic search, removes fields like image and password
 #TODO: In User enumerate the searchable fields and have this function be malleable in accordance with that
@@ -109,13 +109,15 @@ def create_simple_skillJSON(skill_entity):
     #print skill_entity.occurrences
     return searchable_skill
 
+
 #remove a mapping from the database, also removes all associated data
 def delete_mapping(doc_type):
-    es.indices.delete_mapping(index=DATABASE_NAME,doc_type=doc_type)
+    es.indices.delete_mapping(index=DATABASE_NAME, doc_type=doc_type)
+
 
 #puts everything from the database into elastic
 def load_database_to_elastic():
-    db_entries=list(Users.User.find())
+    db_entries = list(Users.User.find())
     for user in db_entries:
         try:
             save_user(user)
@@ -124,8 +126,9 @@ def load_database_to_elastic():
             print str(e)
             continue
 
+
 def convert_connection_types():
-    db_entries=list(Users.User.find())
+    db_entries = list(Users.User.find())
     for user in db_entries:
         index = 0
         converted = False

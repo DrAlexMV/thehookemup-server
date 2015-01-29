@@ -38,18 +38,28 @@ class Startup(Document):
         'overview': basestring
     }
 
+    use_dot_notation = True
+
     question_status = {'PENDING_ANSWER': 'pa', 'ANSWERED': 'a'}
 
     required_fields = ['name', 'description']
 
     basic_info_fields = {'name', 'date', 'website', 'handles', 'description', 'picture', 'owners', 'categories', '_id'}
 
-    use_dot_notation = True
+    def to_searchable(self):
+        return {
+            "name": self.name,
+            "website": self.website,
+            "description": self.description
+        }
+
     def __repr__(self):
         return '<Startup %r>' % (self.name)
 
+
 def is_owner(user_id, startup_object):
     return str(user_id) in startup_object.owners
+
 
 def create_startup(user_id, request):
     startup = Startups.Startup()
@@ -66,15 +76,19 @@ def create_startup(user_id, request):
     database_wrapper.save_entity(startup)
     return startup
 
+
 def find_startup_by_id(startup_id):
     #takes a string id
     startup = Startups.Startup.find_one({'_id': ObjectId(startup_id)})
     return startup
 
-def get_basic_startup(startup_object, current_user_id):
+
+def get_basic_startup(startup_object, current_user_id=None):
     fields = list(Startup.basic_info_fields)
+    current_user_id = current_user_id if current_user_id else user.getUserID('me')
     owner = {'isOwner': is_owner(current_user_id, startup_object)}
-    return utils.jsonFields(startup_object, fields, response = False, extra=owner)
+    return utils.jsonFields(startup_object, fields, response=False, extra=owner)
+
 
 def update_basic_startup(startup_object, request):
     fields = list(Startup.basic_info_fields)
@@ -83,6 +97,7 @@ def update_basic_startup(startup_object, request):
 
     database_wrapper.save_entity(startup_object)
     return startup_object
+
 
 def get_details(startup_object, current_user_id):
     qa = startup_object.qa
@@ -121,6 +136,7 @@ def post_wall(startup_object, request, current_user_id):
     msg['user'] = utils.jsonFields(user.findUserByID(current_user_id), user.User.basic_info_fields, response=False)
     return msg
 
+
 def remove_wall(startup_object, post_id, request):
     index = 0
     while index < len(startup_object.wall):
@@ -130,6 +146,7 @@ def remove_wall(startup_object, post_id, request):
             return startup_object
 
     raise Exception('Not found')
+
 
 def add_question(startup_object, request, current_user_id):
     question = {
@@ -146,6 +163,7 @@ def add_question(startup_object, request, current_user_id):
 
     return startup_object
 
+
 def give_answer(startup_object, question_id, request):
     for question in startup_object.qa:  # O(N). Probably not too bad.
         if question['id'] == question_id:
@@ -156,6 +174,7 @@ def give_answer(startup_object, question_id, request):
 
     raise Exception('Not found')
 
+
 def remove_question(startup_object, question_id, request):
     index = 0
     while index < len(startup_object.qa):
@@ -165,6 +184,7 @@ def remove_question(startup_object, question_id, request):
             return startup_object
 
     raise Exception('Not found')
+
 
 def put_people(startup_object, request):
     startup_object.people = request['people']

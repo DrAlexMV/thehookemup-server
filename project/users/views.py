@@ -94,7 +94,7 @@ def signup():
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         login_user(new_user)
-        return userBasicInfo(str(new_user._id))
+        return user.get_basic_info_with_security(new_user)
     else:
         error = 'Email is already in use'
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
@@ -106,18 +106,10 @@ def logout():
     logout_user()
     return jsonify(LoggedIn=False, error=None)
 
-
-####################################################
-####################################################
-
-#UserBasicInfo: /api/user/{userid}/
-#UserDetails: /api/user/{userid}/details/
-#UserEdges: /api/user/{userid}/edges/
-
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>', methods=['PUT'])
 @login_required
 @user.only_me
-def userBasicInfo(user_id):
+def user_basic_info(user_id):
     entry = user.findUserByID(user_id)
     if entry is None:
         abort(404)
@@ -139,10 +131,11 @@ def userBasicInfo(user_id):
         abort(404)
     return user.get_basic_info_with_security(entry)
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/<attribute>', methods=['DELETE'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/<attribute>', methods=['DELETE'])
 @login_required
-def delete_basic_user_info(userid, attribute):
-    entry = user.findUserByID(userid)
+@user.only_me
+def delete_basic_user_info(user_id, attribute):
+    entry = user.findUserByID(user_id)
     if entry is None:
         abort(404)
     try:
@@ -155,25 +148,30 @@ def delete_basic_user_info(userid, attribute):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details', methods=['GET'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details', methods=['GET'])
 @login_required
-def get_user_details(userid):
-    """
-
-
-    """
+def get_user_details(user_id):
     try:
-        entry = user.findUserByID(userid)
+        entry = user.findUserByID(user_id)
         if entry is None:
             return '', HTTP_404_NOT_FOUND
-        return user.get_user_details(entry)
+        return user.get_user_details(entry, user_id == 'me')
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/skills', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/initialization', methods=['PUT'])
 @login_required
-def put_skills(userid):
+@user.only_me
+def put_initialization(user_id):
+    req = request.get_json()
+    user_object = user.findUserByID(user_id)
+    user.set_initialization_level(user_object, req['initialization'])
+    return jsonify(error='')
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/skills', methods=['PUT'])
+@login_required
+@user.only_me
+def put_skills(user_id):
     """
     Example request:
 
@@ -184,21 +182,20 @@ def put_skills(userid):
 
     returns STATUS_200_OK when successful
     """
-    try:
-        req = request.get_json()
-        entry = user.findUserByID(userid)
-        if entry is None:
-            return '', HTTP_404_NOT_FOUND
-        if user.put_skills(entry, req):
-            return '', HTTP_200_OK
-        else:
-            return '', HTTP_400_BAD_REQUEST
-    except Exception as e:
-        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
+    req = request.get_json()
+    entry = user.findUserByID(user_id)
+    if entry is None:
+        return '', HTTP_404_NOT_FOUND
+    if user.put_skills(entry, req):
+        return '', HTTP_200_OK
+    else:
+        return '', HTTP_400_BAD_REQUEST
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/interests', methods=['PUT'])
+
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/interests', methods=['PUT'])
 @login_required
-def put_interests(userid):
+@user.only_me
+def put_interests(user_id):
     """
     Example request:
 
@@ -210,21 +207,19 @@ def put_interests(userid):
 
     returns STATUS_200_OK when successful
     """
-    try:
-        req = request.get_json()
-        entry = user.findUserByID(userid)
-        if entry is None:
-            return '', HTTP_404_NOT_FOUND
-        if user.put_interests(entry, req):
-            return '', HTTP_200_OK
-        else:
-            return '', HTTP_400_BAD_REQUEST
-    except Exception as e:
-        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
+    req = request.get_json()
+    entry = user.findUserByID(user_id)
+    if entry is None:
+        return '', HTTP_404_NOT_FOUND
+    if user.put_interests(entry, req):
+        return '', HTTP_200_OK
+    else:
+        return '', HTTP_400_BAD_REQUEST
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<userid>/details/projects', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/projects', methods=['PUT'])
 @login_required
-def put_projects(userid):
+@user.only_me
+def put_projects(user_id):
     """
     Example request:
 
@@ -244,17 +239,14 @@ def put_projects(userid):
 
     returns status 200_OK when successful
     """
-    try:
-        req = request.get_json()
-        entry = user.findUserByID(userid)
-        if entry is None:
-            return '', HTTP_404_NOT_FOUND
-        if user.put_projects(entry, req):
-            return '', HTTP_200_OK
-        else:
-            return '', HTTP_400_BAD_REQUEST
-    except Exception as e:
-        return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
+    req = request.get_json()
+    entry = user.findUserByID(user_id)
+    if entry is None:
+        return '', HTTP_404_NOT_FOUND
+    if user.put_projects(entry, req):
+        return '', HTTP_200_OK
+    else:
+        return '', HTTP_400_BAD_REQUEST
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges', methods=['GET'])
 @login_required
@@ -292,10 +284,8 @@ def userEdges(user_id):
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections', methods=['POST'])
 @login_required
+@user.only_me
 def add_connection_route(user_id):
-    if user_id != 'me':
-        raise Exception('Not able to add users for other people')
-
     req = request.get_json()
 
     # TODO: have some system so friend requests are sent
@@ -319,6 +309,7 @@ def add_connection_route(user_id):
 
 @users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
 @login_required
+@user.only_me
 def remove_connection_route(user_id, connection_id):
     entry = user.findUserByID(user_id)
     connection = user.findUserByID(connection_id)

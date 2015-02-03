@@ -10,6 +10,7 @@ from flask.ext.login import current_user
 from flask.ext.api.status import HTTP_401_UNAUTHORIZED
 from flask import jsonify
 import skill
+from functools import wraps
 
 def max_length(length):
     def validate(value):
@@ -53,7 +54,8 @@ class User(Document):
             'connections': [{'user': basestring, 'type': basestring, 'message': basestring,
                              'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
-        }
+        },
+        'initialization': int # None: init finished--don't show user wizard. All other numbers: step number
 
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'roles']
@@ -177,8 +179,13 @@ def put_projects(user, req):
     database_wrapper.save_entity(user)
     return True
 
+def set_initialization_level(user, initialization_level):
+    user['initialization'] = initialization_level
+    database_wrapper.save_entity(user)
+    return True
+
 #TODO: clean this up, use the details field defined above
-def get_user_details(user):
+def get_user_details(user, me=False):
     output = {}
     output['interests']=user['interests']
     output['skills']=[]
@@ -192,6 +199,10 @@ def get_user_details(user):
         ids =  map(ObjectId, p['people'])
         p['people'] = get_basic_info_from_ids(ids)
         output['projects'].append(p)
+
+    # append private fields
+    if me:
+        output['initialization'] = user.get('initialization')
 
     return jsonify(output)
     '''fields = list(User.details)
@@ -371,6 +382,7 @@ def get_basic_info_from_ids(user_ids, keep_order=False):
 # decorator that protects other users from PUT/POST/DELETE on you stuff
 # user_id _must_ be passed in as 'user_id'
 def only_me(function):
+    @wraps(function)
     def inner(*args, **kwargs):
         if kwargs['user_id'] != 'me':
             return '{}', HTTP_401_UNAUTHORIZED

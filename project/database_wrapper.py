@@ -43,11 +43,8 @@ def save_skill(skill):
     obj_id = str(skill._id)
     headers = {'content-type': 'application/json'}
     r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, headers=headers)
-    #print "first r: " + str(r)+ r.content + '\n'
     searchable_entity = create_simple_skillJSON(skill)
-    #print json.dumps(searchable_entity)
     r = requests.put("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
-    #print "second r: " +str(r) + r.content + '\n'
     #es.index(index=DATABASE_NAME, doc_type='Skill', id=obj_id, body=searchable_entity)
 
 def save_user(user):
@@ -76,7 +73,6 @@ def create_simple_userJSON(user_entity):
     for project in user_entity.projects:
         del project['date']
         del project['people']
-        print project
 
     #we want elastic to index users with skills
     skill_names = []

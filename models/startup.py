@@ -144,6 +144,7 @@ def remove_wall(startup_object, post_id, request):
             startup_object.wall.pop(index)
             database_wrapper.save_entity(startup_object)
             return startup_object
+        index += 1
 
     raise Exception('Not found')
 

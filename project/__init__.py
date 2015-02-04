@@ -13,6 +13,7 @@ from flask.ext.cors import CORS
 import init_elastic
 from elasticsearch import Elasticsearch
 from config import config
+from json_rest import CustomJSONEncoder
 
 ################
 #### config ####
@@ -70,6 +71,7 @@ app.register_blueprint(startups_blueprint)
 app.register_blueprint(invites_blueprint)
 app.register_blueprint(waitlists_blueprint)
 app.register_blueprint(endorsements_blueprint)
+app.json_encoder = CustomJSONEncoder
 
 login_manager.login_view = "users.login"
 

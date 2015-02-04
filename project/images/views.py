@@ -33,11 +33,11 @@ def crop_image(image):
     return crop
 
 # Fix POST hang by giving preflight the OPTIONS OK it needs. Hacky but works.
-@images_blueprint.route(ROUTE_PREPEND+'/image',  methods=['OPTIONS'])
+@images_blueprint.route(ROUTE_PREPEND+'/images',  methods=['OPTIONS'])
 def handle_preflight():
     return current_app.make_default_options_response()
 
-@images_blueprint.route(ROUTE_PREPEND+'/image', methods=['POST'])
+@images_blueprint.route(ROUTE_PREPEND+'/images', methods=['POST'])
 @login_required
 def upload_image():
     request_error = ''
@@ -53,7 +53,7 @@ def upload_image():
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST
 
-@images_blueprint.route(ROUTE_PREPEND+'/image/<imageid>.'+PROFILE_FORMAT, methods=['GET'])
+@images_blueprint.route(ROUTE_PREPEND+'/images/<imageid>.'+PROFILE_FORMAT, methods=['GET'])
 @login_required
 def get_image(imageid):
     entry = find_image_by_id(imageid)
@@ -64,7 +64,7 @@ def get_image(imageid):
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
-@images_blueprint.route(ROUTE_PREPEND+'/image/<imageid>.'+PROFILE_FORMAT, methods=['DELETE'])
+@images_blueprint.route(ROUTE_PREPEND+'/images/<imageid>.'+PROFILE_FORMAT, methods=['DELETE'])
 @login_required
 def delete_image(imageid):
     entry = find_image_by_id(imageid)

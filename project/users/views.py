@@ -106,7 +106,7 @@ def logout():
     logout_user()
     return jsonify(LoggedIn=False, error=None)
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>', methods=['PUT'])
 @login_required
 @user.only_me
 def user_basic_info(user_id):
@@ -123,7 +123,7 @@ def user_basic_info(user_id):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>', methods=['GET'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>', methods=['GET'])
 @login_required
 def userBasicInfo(user_id):
     entry = user.findUserByID(user_id)
@@ -131,7 +131,7 @@ def userBasicInfo(user_id):
         abort(404)
     return user.get_basic_info_with_security(entry)
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/<attribute>', methods=['DELETE'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/<attribute>', methods=['DELETE'])
 @login_required
 @user.only_me
 def delete_basic_user_info(user_id, attribute):
@@ -148,7 +148,7 @@ def delete_basic_user_info(user_id, attribute):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details', methods=['GET'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details', methods=['GET'])
 @login_required
 def get_user_details(user_id):
     try:
@@ -159,7 +159,7 @@ def get_user_details(user_id):
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/initialization', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/initialization', methods=['PUT'])
 @login_required
 @user.only_me
 def put_initialization(user_id):
@@ -168,7 +168,7 @@ def put_initialization(user_id):
     user.set_initialization_level(user_object, req['initialization'])
     return jsonify(error='')
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/skills', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/skills', methods=['PUT'])
 @login_required
 @user.only_me
 def put_skills(user_id):
@@ -192,7 +192,7 @@ def put_skills(user_id):
         return '', HTTP_400_BAD_REQUEST
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/interests', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/interests', methods=['PUT'])
 @login_required
 @user.only_me
 def put_interests(user_id):
@@ -216,7 +216,7 @@ def put_interests(user_id):
     else:
         return '', HTTP_400_BAD_REQUEST
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/details/projects', methods=['PUT'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/projects', methods=['PUT'])
 @login_required
 @user.only_me
 def put_projects(user_id):
@@ -248,7 +248,7 @@ def put_projects(user_id):
     else:
         return '', HTTP_400_BAD_REQUEST
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges', methods=['GET'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/edges', methods=['GET'])
 @login_required
 def userEdges(user_id):
     entry = user.findUserByID(user_id)
@@ -282,7 +282,7 @@ def userEdges(user_id):
 
     return jsonify(**annotated)
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections', methods=['POST'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/edges/connections', methods=['POST'])
 @login_required
 @user.only_me
 def add_connection_route(user_id):
@@ -307,7 +307,7 @@ def add_connection_route(user_id):
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-@users_blueprint.route(ROUTE_PREPEND+'/user/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
+@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
 @login_required
 @user.only_me
 def remove_connection_route(user_id, connection_id):

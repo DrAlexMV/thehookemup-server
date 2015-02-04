@@ -183,6 +183,7 @@ def remove_question(startup_object, question_id, request):
             startup_object.qa.pop(index)
             database_wrapper.save_entity(startup_object)
             return startup_object
+        index += 1
 
     raise Exception('Not found')
 

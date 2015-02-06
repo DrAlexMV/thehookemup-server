@@ -377,7 +377,11 @@ def get_basic_info_from_ids(user_ids, keep_order=False):
         by_id = {user._id : user for user in queried}
         sorted_queried = []
         for user_id in user_ids:
-            sorted_queried.append(by_id[user_id])
+            user_data = by_id.get(user_id)
+            if (user_data):
+                sorted_queried.append(user_data)
+            else:
+                print 'Warning, Orphaned reference ', user_id
         return get_basic_info_from_users(sorted_queried)
 
     return get_basic_info_from_users(queried)

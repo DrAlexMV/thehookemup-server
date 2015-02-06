@@ -11,5 +11,5 @@ config['MONGODB_HOST'] = system_mongo_host if system_mongo_host else 'localhost'
 config['MONGODB_PORT'] = 27017
 config['ELASTIC_HOST'] = system_elastic_host if system_elastic_host else 'localhost'
 config['ELASTIC_PORT'] = 9200
-config['ACCEPTED_ORIGINS'] = ['http://beta.founderati.io', 'http://beta.thehookemup.com', 'http://104.236.77.225', 'http://localhost:3000']
+config['ACCEPTED_ORIGINS'] = ['http://beta.founderati.io', 'http://beta.thehookemup.com', 'http://104.236.77.225', 'http://localhost:3000', 'http://104.236.196.182']
 config['DEBUG'] = False

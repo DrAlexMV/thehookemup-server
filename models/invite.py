@@ -11,9 +11,14 @@ class Invite(Document):
     __database__ = 'thehookemup'
     structure = {
         'producerObjectId': basestring,
-        'consumerObjectId': basestring
-        }
+        'consumerObjectId': basestring,
+        'scratchedOut': bool
+    }
     
+    default_values = {
+        'scratchedOut': False
+    }
+
     required_fields = ['producerObjectId']
 
     use_dot_notation = True
@@ -33,6 +38,7 @@ def get_invite_attributes(invite):
     output['inviteCode']=str(invite._id)
     output['producerObjectId']=invite['producerObjectId']
     output['consumerObjectId']=invite['consumerObjectId']
+    output['scratchedOut']=invite['scratchedOut']
     return output
 
 
@@ -52,10 +58,14 @@ def find_multiple_invites(mapAttributes):
     return entries
 
 
-def consumeInvite(invite_id, consumer_object_id):
+def consume_invite(invite_id, consumer_object_id):
     entry = Invites.Invite.find_one({'_id': ObjectId(invite_id)})
     if entry['consumerObjectId']!=None:
         raise Exception("Code has already been consumed")
     entry['consumerObjectId'] = consumer_object_id
     entry.save()
 
+def put_invite(invite_id, fields):
+    entry = Invites.Invite.find_one({'_id': ObjectId(invite_id)})
+    entry['scratchedOut'] = fields['scratchedOut']
+    entry.save()

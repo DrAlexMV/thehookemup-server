@@ -24,9 +24,9 @@ def get_invites():
     invite_attributes_list = [invite.get_invite_attributes(entry) for entry in entries]
     return jsonify(error=None, invites=invite_attributes_list)
 
-@invites_blueprint.route(ROUTE_PREPEND + '/invites/<invite_code>', methods=['PUT'])
+@invites_blueprint.route(ROUTE_PREPEND + '/invites/<invite_id>', methods=['PUT'])
 @login_required
-def put_invite(invite_code):
+def put_invite(invite_id):
     invite.put_invite(invite_code, request.get_json())
     return jsonify(error=None)
 
@@ -56,7 +56,7 @@ def validate_invite(invite_code):
     Indicates whether or not a code is valid
     '''
     try:
-        invite_entry = invite.find_invite_by_id(ObjectId(invite_code))
+        invite_entry = invite.find_invite_by_code(ObjectId(invite_code))
         if invite_entry is None:
             raise Exception('Code not found')
         if invite_entry.consumerObjectId is not None:

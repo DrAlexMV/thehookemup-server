@@ -51,7 +51,7 @@ def find_invite_by_code(invite_code):
     return find_invite({'code': invite_code})
 
 def find_invite_by_id(invite_id):
-    return find_invite({'_id': ObjectId(invite_code)})
+    return find_invite({'_id': ObjectId(invite_id)})
 
 def consume_invite(invite_code, consumer_object_id):
     entry = find_invite_by_code(invite_code)

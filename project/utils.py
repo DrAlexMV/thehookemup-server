@@ -13,7 +13,7 @@ def jsonFields(modelInstance, fields, response=True, extra=None):
 
     for key in fields:
         val = modelInstance.get(key)
-        entries[key] = val if (type(val) in [str, int, float, list, dict] or val is None) else str(val)
+        entries[key] = val if (type(val) in [str, int, float, list, dict, bool] or val is None) else str(val)
 
     if not extra is None:
         entries.update(extra)

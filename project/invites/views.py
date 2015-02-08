@@ -27,7 +27,7 @@ def get_invites():
 @invites_blueprint.route(ROUTE_PREPEND + '/invites/<invite_id>', methods=['PUT'])
 @login_required
 def put_invite(invite_id):
-    invite.put_invite(invite_code, request.get_json())
+    invite.put_invite(invite_id, request.get_json())
     return jsonify(error=None)
 
 ## This endpoint needs to be removed before release

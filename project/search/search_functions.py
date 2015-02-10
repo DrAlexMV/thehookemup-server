@@ -3,6 +3,7 @@ import requests
 import json
 from project.config import config
 
+
 #TODO: Some things that should be done to make these searches better is to weight
 #TODO: unique words more highly. This is an option in elastic search, and it shouldn't
 #TODO: be difficult to implement.
@@ -153,3 +154,21 @@ def simple_search_skills(text, num_results):
     unfiltered_results = res.json()['hits']['hits']
     filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurrences":result["_source"]["occurrences"]}, unfiltered_results)
     return filtered_results
+
+
+def search_startups_endorsements(results_per_page, page):
+
+        #simple query to get all results
+    query = {
+        "query": {
+            "match_all": {}
+        }
+    }
+
+    if page == None or results_per_page == None:
+        res = es.search(index=DATABASE_NAME, doc_type='Startup', body=query, sort={"endorsements":"desc"})['hits']['hits']
+        print(res)
+    else:
+        res = es.search(index=DATABASE_NAME, doc_type='Startup', body=query, from_=page*results_per_page, size=results_per_page, sort={"endorsements":"desc"})['hits']['hits']
+    number_results = es.count(index=DATABASE_NAME, doc_type='Startup', body=query)['count']
+    return SearchResults(res,{'numberResults': number_results})

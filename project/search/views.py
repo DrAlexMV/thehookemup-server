@@ -1,7 +1,7 @@
 from flask import request, Blueprint, jsonify
 from flask.ext.login import login_required
 from project import ROUTE_PREPEND, utils
-from models import user, endorsement
+from models import user, endorsement, startup
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
 from bson.json_util import dumps
@@ -146,6 +146,41 @@ def search_skills():
         num_results = request.args.get('results')
 
         return jsonify(results=search_functions.simple_search_skills(text_to_search,num_results),error=None)
+
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
+
+
+@search_blueprint.route(ROUTE_PREPEND+'/search/startups', methods=['GET'])
+@login_required
+def search_startups():
+    """
+
+
+    """
+    query_string = request.args.get('query_string')
+    results_per_page = request.args.get('results_per_page')
+    page = request.args.get('page')
+    rank = request.args.get('rank')
+
+    try:
+        if query_string is not None:
+            query_string = query_string.lower()
+        if results_per_page is not None:
+            results_per_page = int(results_per_page)
+        if page is not None:
+            page = int(page)
+
+        if(rank!='endorsements'):
+            return jsonify(error='Invalid ranking parameter')
+
+         #call basic search based on ranking
+        results = search_functions.search_startups_endorsements(results_per_page, page)
+         ## now turn the queries into startups
+        startup_ids = map(ObjectId, (entry['_id'] for entry in results.data))
+        basic_startups = startup.get_basic_info_from_ids(startup_ids, keep_order=True)
+        #endorsement.populate_counts(basic_startups)
+        return dumps({'results': basic_startups, 'metadata': results.metadata, 'error': None})
 
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST

@@ -1,9 +1,9 @@
 from bson.objectid import ObjectId
 from project import Endorsements
 from mongokit import Document
-from project import connection
+from project import connection, database_wrapper
 from models.user import getUserID, findUserByID, get_basic_info_with_security
-from models.startup import find_startup_by_id, get_basic_startup
+import startup
 from itertools import groupby
 
 
@@ -23,12 +23,12 @@ coll = Endorsements
 
 
 def find_entity_by_type(entity_id, entity_type):
-    find = find_startup_by_id if entity_type == 'startup' else findUserByID
+    find = startup.find_startup_by_id if entity_type == 'startup' else findUserByID
     return find(entity_id)
 
 
 def find_entity_basic_info_by_type(entity_id, entity_type):
-    basic_info = get_basic_startup if entity_type == 'startup' else get_basic_info_with_security
+    basic_info = startup.get_basic_startup if entity_type == 'startup' else get_basic_info_with_security
     return basic_info(find_entity_by_type(entity_id, entity_type))
 
 
@@ -94,6 +94,12 @@ def endorse_entity(entity_id, entity_type):
 
     entity_endorsements.save()
     user_endorsements.save()
+
+    #TODO: fix this, temporary workaround to get endorsements to update in elastic
+    if (entity_type=='startup'):
+        startup = startup.find_startup_by_id(entity_id)
+        database_wrapper.save_entity(startup)
+
     return user_endorsements['endorsees']
 
 

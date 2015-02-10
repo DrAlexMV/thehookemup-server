@@ -10,7 +10,8 @@ def startup_mapping():
             "properties": {
                 "name": {"type": "string"},
                 "website": {"type": "string"},
-                "description": {"type": "string"}
+                "description": {"type": "string"},
+                "endorsements":{"type": "integer"}
             }
         }
     }
@@ -73,6 +74,8 @@ def generate_search_structure(es):
 
         }
     }
+
+
 
     headers = {'content-type': 'application/json'}
     r = requests.put("http://" + config['ELASTIC_HOST'] + ':' + str(config['ELASTIC_PORT']) + "/skills",

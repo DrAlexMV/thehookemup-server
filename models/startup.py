@@ -5,6 +5,7 @@ from project import database_wrapper
 from bson.objectid import ObjectId
 from project import utils
 from models import user
+import endorsement
 import datetime
 
 @connection.register
@@ -50,7 +51,8 @@ class Startup(Document):
         return {
             "name": self.name,
             "website": self.website,
-            "description": self.description
+            "description": self.description,
+            "endorsements": endorsement.endorsers(entity_id=self._id)
         }
 
     def __repr__(self):
@@ -197,3 +199,36 @@ def put_overview(startup_object, request):
     startup_object.overview = request['overview']
     database_wrapper.save_entity(startup_object)
     return startup_object
+
+
+
+#TODO: put this functionality into a method that can be used by all entities.
+#TODO: this is just copied from users with the name user changed to startup.
+
+def get_basic_info_from_ids(startup_ids, keep_order=True):
+    queried = find_multiple_startups({'_id': {'$in': startup_ids}})
+    if (keep_order):
+        by_id = {startup._id : startup for startup in queried}
+        sorted_queried = []
+        for startup_id in startup_ids:
+            startup_data = by_id.get(startup_id)
+            if (startup_data):
+                sorted_queried.append(startup_data)
+            else:
+                print 'Warning, Orphaned reference ', startup_id
+        return get_basic_info_from_startups(sorted_queried)
+
+    return get_basic_info_from_startups(queried)
+
+
+def find_multiple_startups(mapAttributes):
+    entries = Startups.Startup.find(mapAttributes)
+    return entries
+
+
+def get_basic_info_from_startups(startups):
+    basic_startups = []
+    for startup_object in startups:
+        basicstartup = utils.jsonFields(startup_object, Startup.basic_info_fields, response=False)
+        basic_startups.append(basicstartup)
+    return basic_startups

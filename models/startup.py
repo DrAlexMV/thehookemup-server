@@ -82,8 +82,28 @@ def find_startup_by_id(startup_id):
     startup = Startups.Startup.find_one({'_id': ObjectId(startup_id)})
     return startup
 
+def find_multiple_users(mapAttributes):
+    entries = Startups.Startup.find(mapAttributes)
+    return entries
+
 def get_basic_startup_by_id(startup_id):
     return get_basic_startup(find_startup_by_id(startup_id))
+
+
+def get_basic_startups_from_ids(startup_ids, keep_order=False):
+    queried = find_multiple_users({'_id': {'$in': startup_ids}})
+    if (keep_order):
+        by_id = {startup._id : startup for startup in queried}
+        sorted_queried = []
+        for startup_id in startup_ids:
+            startup_data = by_id.get(startup_id)
+            if (startup_data):
+                sorted_queried.append(startup_data)
+            else:
+                print 'Warning, Orphaned reference ', startup_id
+        return [ get_basic_startup(startup_info) for startup_info in sorted_queried ]
+
+    return [ get_basic_startup(startup_info) for startup_info in sorted_queried ]
 
 def get_basic_startup(startup_object, current_user_id=None):
     fields = list(Startup.basic_info_fields)

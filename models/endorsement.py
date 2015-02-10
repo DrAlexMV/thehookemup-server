@@ -2,8 +2,8 @@ from bson.objectid import ObjectId
 from project import Endorsements
 from mongokit import Document
 from project import connection
-from models.user import getUserID, findUserByID, get_basic_info_with_security
-from models.startup import find_startup_by_id, get_basic_startup
+from models.user import getUserID, findUserByID, get_basic_info_with_security, get_basic_info_from_ids
+from models.startup import find_startup_by_id, get_basic_startup, get_basic_startups_from_ids
 from itertools import groupby
 from mongokit.paginator import Paginator
 
@@ -29,6 +29,12 @@ def find_entity_by_type(entity_id, entity_type):
     return find(entity_id)
 
 
+def find_entities_basic_info_by_type(entity_ids, entity_type):
+    print entity_ids, entity_type
+    basic_info = get_basic_startups_from_ids if entity_type == 'startup' else get_basic_info_from_ids
+    return basic_info(entity_ids)
+
+
 def find_entity_basic_info_by_type(entity_id, entity_type):
     basic_info = get_basic_startup if entity_type == 'startup' else get_basic_info_with_security
     return basic_info(find_entity_by_type(entity_id, entity_type))
@@ -38,7 +44,7 @@ def find_entity_list_by_type(entity_list):
     if entity_list:
         grouped = groupby(entity_list, key=lambda e: e['entityType'])
         return reduce(lambda acc, (entity_type, entities):
-                      acc + map(lambda entity: find_entity_basic_info_by_type(entity['_id'], entity_type), entities), grouped, [])
+                      acc + find_entities_basic_info_by_type([ e['_id'] for e in entities ], entity_type), grouped, [])
     return []
 
 

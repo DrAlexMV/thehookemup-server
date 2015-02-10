@@ -150,3 +150,45 @@ def search_skills():
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
+
+@search_blueprint.route(ROUTE_PREPEND+'/search/startups', methods=['GET'])
+@login_required
+def search_startups():
+    """
+    Example Usage:
+
+    GET http://localhost:5000/api/v1/search/startups?rank=endorsements&results_per_page=10&page=2
+
+    This will return the 10 results on the 2nd page, ordered by number of endorsements
+
+
+    """
+    
+   # query_string = request.args.get('query_string')
+    results_per_page = request.args.get('results_per_page')
+    page = request.args.get('page')
+    rank = request.args.get('rank')
+
+    try:
+       # if query_string is not None:
+        #    query_string = query_string.lower()
+        if results_per_page is not None:
+            results_per_page = int(results_per_page)
+        else:
+            results_per_page = 20
+
+        if page is not None:
+            page = int(page)
+        else:
+            page = 1
+
+        if(rank!='endorsements'):
+            return jsonify(error='Invalid ranking type')
+
+         #get results from mongo for now
+        results = endorsement.get_entities_by_num_endorsements('startup', page, results_per_page)
+
+        return dumps({'results': results, 'metadata': None, 'error': None})
+
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_400_BAD_REQUEST

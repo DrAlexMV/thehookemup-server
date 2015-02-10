@@ -82,6 +82,8 @@ def find_startup_by_id(startup_id):
     startup = Startups.Startup.find_one({'_id': ObjectId(startup_id)})
     return startup
 
+def get_basic_startup_by_id(startup_id):
+    return get_basic_startup(find_startup_by_id(startup_id))
 
 def get_basic_startup(startup_object, current_user_id=None):
     fields = list(Startup.basic_info_fields)

@@ -5,6 +5,8 @@ from project import connection
 from models.user import getUserID, findUserByID, get_basic_info_with_security
 from models.startup import find_startup_by_id, get_basic_startup
 from itertools import groupby
+from mongokit.paginator import Paginator
+
 
 
 @connection.register
@@ -142,7 +144,13 @@ def has_entity_endorsed(endorser, endorsee_id):
     return bool(found)
 
 
-
+def get_entities_by_num_endorsements(entity_type, page, results_per_page):
+     endorsements = Endorsements.Endorsement.find( sort = [('endorsers', -1)])
+     paged_endorsements = Paginator(endorsements, page, results_per_page)
+     endorsements = paged_endorsements.items
+     ranked_entities = [{'_id':endorsement['_id'], 'entityType':endorsement['entityType']} for endorsement in endorsements]
+     startups = filter(lambda e: e['entityType'] == entity_type, ranked_entities)
+     return map(lambda e:find_entity_basic_info_by_type(e['_id'], entity_type), startups)
 
 
 

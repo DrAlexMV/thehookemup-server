@@ -83,6 +83,7 @@ def endorse_entity(entity_id, entity_type):
     entity_id = ObjectId(entity_id)
     user_id = ObjectId(getUserID('me'))
 
+
     if entity_id == user_id:
         raise Exception('Cannot endorse self')
 
@@ -97,8 +98,8 @@ def endorse_entity(entity_id, entity_type):
 
     #TODO: fix this, temporary workaround to get endorsements to update in elastic
     if (entity_type=='startup'):
-        startup = startup.find_startup_by_id(entity_id)
-        database_wrapper.save_entity(startup)
+        startup_entity = startup.find_startup_by_id(entity_id)
+        database_wrapper.save_to_elastic(startup_entity, 'Startup', startup_entity.to_searchable())
 
     return user_endorsements['endorsees']
 

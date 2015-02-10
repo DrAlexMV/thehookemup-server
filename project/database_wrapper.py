@@ -66,6 +66,7 @@ def save_startup(startup):
     save_to_elastic(startup, 'Startup', startup.to_searchable())
 
 
+
 #turns the user json into something indexable by elastic search, removes fields like image and password
 #TODO: In User enumerate the searchable fields and have this function be malleable in accordance with that
 def create_simple_userJSON(user_entity):

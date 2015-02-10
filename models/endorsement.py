@@ -30,7 +30,6 @@ def find_entity_by_type(entity_id, entity_type):
 
 
 def find_entities_basic_info_by_type(entity_ids, entity_type):
-    print entity_ids, entity_type
     basic_info = get_basic_startups_from_ids if entity_type == 'startup' else get_basic_info_from_ids
     return basic_info(entity_ids)
 

@@ -16,9 +16,9 @@ class Startup(Document):
         'date': datetime.datetime,
         'website': basestring,
         'description': basestring,
-        'picture': basestring, # picture mongo id
-        'owners': [basestring], # only one for now, add more later
-        'categories': [basestring], # ids of categories
+        'picture': basestring,  # picture mongo id
+        'owners': [basestring],  # only one for now, add more later
+        'markets': [basestring],  # ids of markets
         'handles': [{'type': basestring, 'url': basestring}],
         'wall': [{
             'id': basestring,
@@ -44,7 +44,7 @@ class Startup(Document):
 
     required_fields = ['name', 'description']
 
-    basic_info_fields = {'name', 'date', 'website', 'handles', 'description', 'picture', 'owners', 'categories', '_id'}
+    basic_info_fields = {'name', 'date', 'website', 'handles', 'description', 'picture', 'owners', 'markets', '_id'}
 
     def to_searchable(self):
         return {
@@ -128,6 +128,7 @@ def get_details(startup_object, current_user_id):
 
     people_info = user.get_basic_info_from_ids(map(ObjectId, startup_object.people))
     return {'qa': qa, 'wall': annotated_wall, 'people': people_info, 'overview': startup_object.overview}
+
 
 def post_wall(startup_object, request, current_user_id):
     msg = {'user': current_user_id, 'message': request['message'], 'date': datetime.datetime.utcnow(), 'id': str(ObjectId())}

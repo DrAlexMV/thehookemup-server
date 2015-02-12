@@ -18,10 +18,10 @@ def startup_mapping():
 
 def generate_search_structure(es):
     # create if not already there
-    es.indices.create(index='thehookemup', ignore=400)
+    es.indices.create(index=config['DATABASE_NAME'], ignore=400)
 
     # tell elastic search what the structure of the user is
-    es.indices.put_mapping(index='thehookemup', doc_type='User', body={
+    es.indices.put_mapping(index=config['DATABASE_NAME'], doc_type='User', body={
         "User": {
             "_all": {"enabled": True},
             "properties": {
@@ -55,7 +55,7 @@ def generate_search_structure(es):
         }
     })
 
-    es.indices.put_mapping(index="thehookemup", doc_type='Startup', body=startup_mapping())
+    es.indices.put_mapping(index=config['DATABASE_NAME'], doc_type='Startup', body=startup_mapping())
 
     #TODO replace hardcoded params
     #stupid elasticpy doesn't seem to support suggestions

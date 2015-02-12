@@ -13,3 +13,6 @@ config['ELASTIC_HOST'] = system_elastic_host if system_elastic_host else 'localh
 config['ELASTIC_PORT'] = 9200
 config['ACCEPTED_ORIGINS'] = ['http://beta.founderati.io', 'http://beta.thehookemup.com', 'http://104.236.77.225', 'http://localhost:3000', 'http://104.236.196.182']
 config['DEBUG'] = False
+config['SECRET_KEY'] = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+config['DATABASE_NAME'] = 'thehookemup'
+config['ROUTE_PREPEND'] = '/api/v1'

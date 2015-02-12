@@ -1,10 +1,12 @@
-from mongokit import *
-from project import Invites
-from project import connection
+from mongokit import Document
+from project.services.database import Database
 from project import database_wrapper
 from project import utils
 from bson.objectid import ObjectId
 from bson import uuid
+
+Invites = Database['Invites']
+connection = Database.connection()
 
 @connection.register
 class Invite(Document):
@@ -16,7 +18,7 @@ class Invite(Document):
         'code': basestring,
         'scratchedOut': bool
     }
-    
+
     default_values = {
         'scratchedOut': False
     }

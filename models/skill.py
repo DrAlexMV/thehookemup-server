@@ -1,9 +1,10 @@
-from mongokit import *
-from project import Skills
-from project import connection
 from project import database_wrapper
 from bson.objectid import ObjectId
+from project.services.database import Database
+from mongokit import Document
 
+Skills = Database['Skills']
+connection = Database.connection()
 
 @connection.register
 class Skill(Document):

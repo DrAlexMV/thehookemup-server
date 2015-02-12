@@ -1,118 +1,25 @@
 from flask import redirect, render_template, request, \
-    url_for, Blueprint, request, jsonify, session, Response
-from flask.ext.login import login_user, login_required, logout_user, abort
-from project import bcrypt, ROUTE_PREPEND, utils, database_wrapper
+    url_for, Blueprint, jsonify, session, Response
+from project import utils, database_wrapper
+from project.services.auth import Auth
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
-import json
-from models import user, invite
-from flask_oauth import OAuth
+from models import user
 from bson.objectid import ObjectId
 import sys
+import json
 
-#TODO: these aren't set up correctly yet
-FACEBOOK_APP_ID = '188477911223606'
-FACEBOOK_APP_SECRET = '621413ddea2bcc5b2e83d42fc40495de'
-oauth = OAuth()
-
-users_blueprint = Blueprint(
+blueprint = Blueprint(
     'users', __name__
 )
 
-facebook = oauth.remote_app('facebook',
-    base_url='https://graph.facebook.com/',
-    request_token_url=None,
-    access_token_url='/oauth/access_token',
-    authorize_url='https://www.facebook.com/dialog/oauth',
-    consumer_key=FACEBOOK_APP_ID,
-    consumer_secret=FACEBOOK_APP_SECRET,
-    request_token_params={'scope': 'email'}
-)
-
-@users_blueprint.route(ROUTE_PREPEND+'/login', methods=['POST'])
-def login():
-    error = None
-    req = request.json
-    try:
-        request_email = req['email'].lower()
-        request_password = req['password']
-    except:
-        e = sys.exc_info()[0]
-        return jsonify(error=str(e)),HTTP_400_BAD_REQUEST
-    entry = user.findSingleUser({'email': request_email})
-    if entry is not None:
-        if bcrypt.check_password_hash(entry['password'],request_password):
-            login_user(entry)
-            obj_id = str(entry._id)
-            return userBasicInfo(obj_id)
-        else:
-            error = 'Invalid password'
-    else:
-       error = 'Invalid email'
-    return jsonify(LoggedIn=False, error=error),HTTP_400_BAD_REQUEST
-
-@users_blueprint.route(ROUTE_PREPEND+'/login/facebook', methods=['GET', 'POST'])
-def login_facebook():
-     return facebook.authorize(callback=url_for('facebook_authorized',
-        next=request.args.get('next') or request.referrer or None,
-        _external=True))
-
-
-@users_blueprint.route('/login/authorized')
-@facebook.authorized_handler
-def facebook_authorized(resp):
-    if resp is None:
-        return 'Access denied: reason=%s error=%s' % (
-            request.args['error_reason'],
-            request.args['error_description']
-        )
-    session['oauth_token'] = (resp['access_token'], '')
-    me = facebook.get('/me')
-    return 'Logged in as id=%s name=%s redirect=%s' % \
-        (me.data['id'], me.data['name'], request.args.get('next'))
-
-@facebook.tokengetter
-def get_facebook_oauth_token():
-    return session.get('oauth_token')
-
-
-@users_blueprint.route(ROUTE_PREPEND+'/signup', methods=['POST'])
-def signup():
-    #TODO: comment in lines to enforce invite codes
-    error = None
-    req = request.json
-    request_email = req['email'].lower()
-    print request_email
-    entry = user.findSingleUser({'email': request_email})
-    print entry
-    if entry is None:
-        try:
-            #invite_code = req['inviteCode']
-            new_user = user.createUser(req)
-            database_wrapper.save_entity(new_user)
-            #invite.consumeInvite(ObjectId(invite_code), str(new_user._id))
-        except Exception as e:
-            return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        login_user(new_user)
-        return user.get_basic_info_with_security(new_user)
-    else:
-        error = 'Email is already in use'
-        return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
-
-
-@users_blueprint.route(ROUTE_PREPEND+'/logout', methods=['GET'])
-@login_required
-def logout():
-    logout_user()
-    return jsonify(LoggedIn=False, error=None)
-
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>', methods=['PUT'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>', methods=['PUT'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def user_basic_info(user_id):
     entry = user.findUserByID(user_id)
     if entry is None:
-        abort(404)
+        return '', HTTP_404_NOT_FOUND
 
     req = request.get_json()
     try:
@@ -123,21 +30,21 @@ def user_basic_info(user_id):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>', methods=['GET'])
-@login_required
+@blueprint.route('/users/<user_id>', methods=['GET'])
+@Auth.require(Auth.USER)
 def userBasicInfo(user_id):
     entry = user.findUserByID(user_id)
     if entry is None:
-        abort(404)
+        return '', HTTP_404_NOT_FOUND
     return user.get_basic_info_with_security(entry)
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/<attribute>', methods=['DELETE'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/<attribute>', methods=['DELETE'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def delete_basic_user_info(user_id, attribute):
     entry = user.findUserByID(user_id)
     if entry is None:
-        abort(404)
+        return '', HTTP_404_NOT_FOUND
     try:
         entry[attribute] = None
         database_wrapper.save_entity(entry)
@@ -148,8 +55,8 @@ def delete_basic_user_info(user_id, attribute):
     return '', HTTP_200_OK
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details', methods=['GET'])
-@login_required
+@blueprint.route('/users/<user_id>/details', methods=['GET'])
+@Auth.require(Auth.USER)
 def get_user_details(user_id):
     try:
         entry = user.findUserByID(user_id)
@@ -159,25 +66,25 @@ def get_user_details(user_id):
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/initialization', methods=['PUT'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/details/initialization', methods=['PUT'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def put_initialization(user_id):
     req = request.get_json()
     user_object = user.findUserByID(user_id)
     user.set_initialization_level(user_object, req['initialization'])
     return jsonify(error='')
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/skills', methods=['PUT'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/details/skills', methods=['PUT'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def put_skills(user_id):
     """
     Example request:
 
     PUT
     {
-    "skills":["popping molly", "javascript"]
+    "skills":["javascript"]
     }
 
     returns STATUS_200_OK when successful
@@ -192,9 +99,9 @@ def put_skills(user_id):
         return '', HTTP_400_BAD_REQUEST
 
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/interests', methods=['PUT'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/details/interests', methods=['PUT'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def put_interests(user_id):
     """
     Example request:
@@ -216,9 +123,9 @@ def put_interests(user_id):
     else:
         return '', HTTP_400_BAD_REQUEST
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/details/projects', methods=['PUT'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/details/projects', methods=['PUT'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def put_projects(user_id):
     """
     Example request:
@@ -248,12 +155,12 @@ def put_projects(user_id):
     else:
         return '', HTTP_400_BAD_REQUEST
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/edges', methods=['GET'])
-@login_required
+@blueprint.route('/users/<user_id>/edges', methods=['GET'])
+@Auth.require(Auth.USER)
 def userEdges(user_id):
     entry = user.findUserByID(user_id)
-    if entry==None:
-        abort(404)
+    if entry is None:
+        return '', HTTP_404_NOT_FOUND
 
     suggested_connections = []
     pending_connections = []
@@ -282,9 +189,9 @@ def userEdges(user_id):
 
     return jsonify(**annotated)
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/edges/connections', methods=['POST'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/edges/connections', methods=['POST'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def add_connection_route(user_id):
     req = request.get_json()
 
@@ -307,14 +214,14 @@ def add_connection_route(user_id):
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-@users_blueprint.route(ROUTE_PREPEND+'/users/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
-@login_required
-@user.only_me
+@blueprint.route('/users/<user_id>/edges/connections/<connection_id>', methods=['DELETE'])
+@Auth.require(Auth.USER)
+@Auth.only_me
 def remove_connection_route(user_id, connection_id):
     entry = user.findUserByID(user_id)
     connection = user.findUserByID(connection_id)
     if entry is None or connection is None:
-        abort(404)
+        return '', HTTP_404_NOT_FOUND
 
     try:
         ## TODO: improve specificity of errors

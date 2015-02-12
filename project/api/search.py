@@ -1,22 +1,23 @@
-from flask import request, Blueprint, jsonify
+from flask import request, jsonify, Blueprint
 from flask.ext.login import login_required
-from project import ROUTE_PREPEND, utils
+from project import utils
+from project.services.auth import Auth
 from models import user, endorsement
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
 from bson.json_util import dumps
-import search_functions
+from project.search import search_functions
 import ast
 
 
-search_blueprint = Blueprint(
+blueprint = Blueprint(
     'search', __name__
 )
 
 
 
-@search_blueprint.route(ROUTE_PREPEND+'/search', methods=['GET'])
-@login_required
+@blueprint.route('/search', methods=['GET'])
+@Auth.require(Auth.USER)
 def search():
     """
 
@@ -71,8 +72,8 @@ def search():
     return dumps({'results': basic_users, 'metadata': results.metadata, 'error': None})
 
 
-@search_blueprint.route(ROUTE_PREPEND+'/search/autocomplete/skills', methods=['GET'])
-@login_required
+@blueprint.route('/search/autocomplete/skills', methods=['GET'])
+@Auth.require(Auth.USER)
 def autocomplete_skill():
     """
     Example:
@@ -109,8 +110,8 @@ def autocomplete_skill():
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
 
-@search_blueprint.route(ROUTE_PREPEND+'/search/skills', methods=['GET'])
-@login_required
+@blueprint.route('/search/skills', methods=['GET'])
+@Auth.require(Auth.USER)
 def search_skills():
     """
     Example request:
@@ -151,8 +152,8 @@ def search_skills():
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
 
-@search_blueprint.route(ROUTE_PREPEND+'/search/startups', methods=['GET'])
-@login_required
+@blueprint.route('/search/startups', methods=['GET'])
+@Auth.require(Auth.USER)
 def search_startups():
     """
     Example Usage:

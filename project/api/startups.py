@@ -1,13 +1,14 @@
-from flask import request, Blueprint, request, jsonify, make_response, current_app
+from flask import request, jsonify, make_response, current_app, Blueprint
 from flask.ext.login import login_user, login_required, logout_user, abort
-from project import bcrypt, ROUTE_PREPEND, utils
+from project import utils
+from project.services.auth import Auth
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
 from models.user import getUserID
 from models import startup
 
-startups_blueprint = Blueprint(
+blueprint = Blueprint(
     'startups', __name__
 )
 
@@ -22,8 +23,8 @@ def not_owned(startup_object):
 
     return None
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups', methods=['POST'])
-@login_required
+@blueprint.route('/startups', methods=['POST'])
+@Auth.require(Auth.USER)
 def create_startup():
     user_id = getUserID('me')
     try:
@@ -32,8 +33,8 @@ def create_startup():
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>', methods=['GET'])
-@login_required
+@blueprint.route('/startups/<startup_id>', methods=['GET'])
+@Auth.require(Auth.USER)
 def get_basic_startup(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
@@ -45,8 +46,8 @@ def get_basic_startup(startup_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details', methods=['GET'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details', methods=['GET'])
+@Auth.require(Auth.USER)
 def get_details(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
     user_id = getUserID('me')
@@ -59,8 +60,8 @@ def get_details(startup_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>', methods=['PUT'])
-@login_required
+@blueprint.route('/startups/<startup_id>', methods=['PUT'])
+@Auth.require(Auth.USER)
 def update_basic_startup(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
     user_id = getUserID('me')
@@ -75,8 +76,8 @@ def update_basic_startup(startup_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/wall', methods=['POST'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/wall', methods=['POST'])
+@Auth.require(Auth.USER)
 def post_wall(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
@@ -90,8 +91,8 @@ def post_wall(startup_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/wall/<post_id>', methods=['DELETE'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/wall/<post_id>', methods=['DELETE'])
+@Auth.require(Auth.USER)
 def remove_wall(startup_id, post_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
@@ -105,8 +106,8 @@ def remove_wall(startup_id, post_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/qa', methods=['POST'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/qa', methods=['POST'])
+@Auth.require(Auth.USER)
 def add_question(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
     user_id = getUserID('me')
@@ -120,8 +121,8 @@ def add_question(startup_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/qa/<question_id>', methods=['PUT'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/qa/<question_id>', methods=['PUT'])
+@Auth.require(Auth.USER)
 def give_answer(startup_id, question_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
@@ -135,8 +136,8 @@ def give_answer(startup_id, question_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/qa/<question_id>', methods=['DELETE'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/qa/<question_id>', methods=['DELETE'])
+@Auth.require(Auth.USER)
 def delete_question(startup_id, question_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
@@ -150,8 +151,8 @@ def delete_question(startup_id, question_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/people', methods=['PUT'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/people', methods=['PUT'])
+@Auth.require(Auth.USER)
 def update_people(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
 
@@ -165,8 +166,8 @@ def update_people(startup_id):
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
 
-@startups_blueprint.route(ROUTE_PREPEND+'/startups/<startup_id>/details/overview', methods=['PUT'])
-@login_required
+@blueprint.route('/startups/<startup_id>/details/overview', methods=['PUT'])
+@Auth.require(Auth.USER)
 def update_overview(startup_id):
     startup_object = startup.find_startup_by_id(startup_id)
 

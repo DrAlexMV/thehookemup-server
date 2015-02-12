@@ -1,6 +1,7 @@
 from flask import redirect, request, url_for, Blueprint, request, jsonify, session, Response
 from flask.ext.login import login_user, login_required, logout_user, abort
-from project import bcrypt, ROUTE_PREPEND, utils, database_wrapper
+from project import utils, database_wrapper
+from project.services.auth import Auth
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
 import json
@@ -9,12 +10,12 @@ from flask_oauth import OAuth
 from bson.objectid import ObjectId
 import sys
 
-invites_blueprint = Blueprint(
+blueprint = Blueprint(
     'invites', __name__
 )
 
-@invites_blueprint.route(ROUTE_PREPEND + '/invites', methods=['GET'])
-@login_required
+@blueprint.route('/invites', methods=['GET'])
+@Auth.require(Auth.USER)
 def get_invites():
     '''
     Gets all the invites for the currently logged on user
@@ -24,15 +25,15 @@ def get_invites():
     invite_attributes_list = [invite.get_invite_attributes(entry) for entry in entries]
     return jsonify(error=None, invites=invite_attributes_list)
 
-@invites_blueprint.route(ROUTE_PREPEND + '/invites/<invite_id>', methods=['PUT'])
-@login_required
+@blueprint.route('/invites/<invite_id>', methods=['PUT'])
+@Auth.require(Auth.USER)
 def put_invite(invite_id):
     invite.put_invite(invite_id, request.get_json())
     return jsonify(error=None)
 
 ## This endpoint needs to be removed before release
-@invites_blueprint.route(ROUTE_PREPEND + '/invites/create', methods=['POST'])
-@login_required
+@blueprint.route('/invites/create', methods=['POST'])
+@Auth.require(Auth.USER)
 def create_invites():
     '''
     Create <number> of invites for the currently logged in user.
@@ -49,8 +50,8 @@ def create_invites():
     except Exception as e:
         return jsonify(error=str(e))
 
-@invites_blueprint.route(ROUTE_PREPEND + '/invites/validate/<invite_code>', methods=['GET'])
-@login_required
+@blueprint.route('/invites/validate/<invite_code>', methods=['GET'])
+@Auth.require(Auth.USER)
 def validate_invite(invite_code):
     '''
     Indicates whether or not a code is valid

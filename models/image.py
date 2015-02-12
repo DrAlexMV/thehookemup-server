@@ -1,10 +1,12 @@
-from mongokit import *
-from project import connection
-from project import DatabaseImages
+from mongokit import Document
+from project.services.database import Database
 from project import utils
 import bson
 import datetime
 from bson.objectid import ObjectId
+
+DatabaseImages = Database['DatabaseImages']
+connection = Database.connection()
 
 def max_length(length):
     def validate(value):

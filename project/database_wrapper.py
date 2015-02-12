@@ -1,10 +1,17 @@
-from project import es, DATABASE_NAME, Users, Skills, Startups
+from project.services.database import Database
+from project.services.elastic import Elastic
 import requests
 import json
 from project.config import config
 
 import models
 
+Startups = Database['Startups']
+Skills = Database['Skills']
+Users = Database['Users']
+connection = Database.connection()
+
+es = Elastic.connection()
 
 def save_entity(entity):
     """
@@ -52,8 +59,8 @@ def save_skill(skill):
 
 def save_to_elastic(entity, doc_type, body_to_save):
     entity_id = str(entity.get("_id"))
-    es.delete(index=DATABASE_NAME, doc_type=doc_type, id=entity_id, ignore=[400, 404])
-    es.index(index=DATABASE_NAME, doc_type=doc_type, id=entity_id, body=body_to_save)
+    es.delete(index = config['DATABASE_NAME'], doc_type = doc_type, id = entity_id, ignore = [400, 404])
+    es.index(index = config['DATABASE_NAME'], doc_type = doc_type, id = entity_id, body = body_to_save)
 
 
 def save_user(user):
@@ -112,7 +119,7 @@ def create_simple_skillJSON(skill_entity):
 
 #remove a mapping from the database, also removes all associated data
 def delete_mapping(doc_type):
-    es.indices.delete_mapping(index=DATABASE_NAME, doc_type=doc_type)
+    es.indices.delete_mapping(index = config['DATABASE_NAME'], doc_type = doc_type)
 
 
 #puts everything from the database into elastic

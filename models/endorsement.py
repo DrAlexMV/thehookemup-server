@@ -1,13 +1,14 @@
 from bson.objectid import ObjectId
-from project import Endorsements
+from project.services.database import Database
 from mongokit import Document
-from project import connection
 from models.user import getUserID, findUserByID, get_basic_info_with_security, get_basic_info_from_ids
 from models.startup import find_startup_by_id, get_basic_startup, get_basic_startups_from_ids
 from itertools import groupby
 from mongokit.paginator import Paginator
 
 
+Endorsements = Database['Endorsements']
+connection = Database.connection()
 
 @connection.register
 class Endorsement(Document):
@@ -156,14 +157,3 @@ def get_entities_by_num_endorsements(entity_type, page, results_per_page):
      ranked_entities = [{'_id':endorsement['_id'], 'entityType':endorsement['entityType']} for endorsement in endorsements]
      startups = filter(lambda e: e['entityType'] == entity_type, ranked_entities)
      return map(lambda e:find_entity_basic_info_by_type(e['_id'], entity_type), startups)
-
-
-
-
-
-
-
-
-
-
-

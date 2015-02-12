@@ -1,7 +1,9 @@
-from project import es, DATABASE_NAME
+from project.services.elastic import Elastic
 import requests
 import json
 from project.config import config
+
+es = Elastic.connection()
 
 #TODO: Some things that should be done to make these searches better is to weight
 #TODO: unique words more highly. This is an option in elastic search, and it shouldn't
@@ -42,10 +44,10 @@ def simple_search_users(query_string, results_per_page, page):
             }
         }
     if page == None or results_per_page == None:
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query)['hits']['hits']
+        res = es.search(index=config['DATABASE_NAME'], doc_type='User', body=query)['hits']['hits']
     else:
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
-    number_results = es.count(index=DATABASE_NAME, doc_type='User', body=query)['count']
+        res = es.search(index=config['DATABASE_NAME'], doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
+    number_results = es.count(index=config['DATABASE_NAME'], doc_type='User', body=query)['count']
     return SearchResults(res,{'numberResults': number_results})
 
 
@@ -98,10 +100,10 @@ def filtered_search_users(query_string, json_filter_list, results_per_page, page
 
     #print query
     if page == None or results_per_page == None:
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query)['hits']['hits']
+        res = es.search(index=config['DATABASE_NAME'], doc_type='User', body=query)['hits']['hits']
     else:
-        res = es.search(index=DATABASE_NAME, doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
-    number_results = es.count(index=DATABASE_NAME, doc_type='User', body=query)['count']
+        res = es.search(index=config['DATABASE_NAME'], doc_type='User', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
+    number_results = es.count(index=config['DATABASE_NAME'], doc_type='User', body=query)['count']
     return SearchResults(res, {'number_results': number_results})
 
 def get_autocomplete_skills(text, num_results):

@@ -1,8 +1,5 @@
-from mongokit import *
-from project import bcrypt
+from mongokit import Document
 import datetime
-from project import connection
-from project import Users
 from project import utils
 from project import database_wrapper
 from bson.objectid import ObjectId
@@ -10,7 +7,11 @@ from flask.ext.login import current_user
 from flask.ext.api.status import HTTP_401_UNAUTHORIZED
 from flask import jsonify
 import skill
-from functools import wraps
+from project.services.database import Database
+from project.services.auth import Auth
+
+Users = Database['Users']
+connection = Database.connection()
 
 def max_length(length):
     def validate(value):
@@ -106,20 +107,20 @@ class User(Document):
     def is_anonymous(self):
         return False
 
-    #TODO: probably should use _id instead of email for login manager
     def get_id(self):
-        return unicode(self.email)
+        return unicode(self['_id'])
 
-    ######################################################
+    def get_access_level(self):
+        return Auth.USER # should set Auth.GHOST based on flags in schema
 
-def createUser(jsonAttributes):
+def create_user(attributes):
     user = Users.User()
-    jsonAttributes['password'] = bcrypt.generate_password_hash(jsonAttributes['password'])
-    jsonAttributes['email']=jsonAttributes['email'].lower()
-    utils.mergeFrom(jsonAttributes, user, User.required_fields)
+    attributes['password'] = Auth.hash_password(['password'])
+    attributes['email'] = attributes['email'].lower()
+    utils.mergeFrom(attributes, user, User.required_fields)
     optional = User.basic_info_fields.difference(User.required_fields)
     optional.remove('_id')
-    utils.mergeFrom(jsonAttributes, user, optional, require=False)
+    utils.mergeFrom(attributes, user, optional, require=False)
 
     return user
 
@@ -178,7 +179,6 @@ def put_projects(user, req):
     user.projects = projects
     database_wrapper.save_entity(user)
     return True
-
 
 def set_initialization_level(user, initialization_level):
     user['initialization'] = initialization_level
@@ -386,12 +386,3 @@ def get_basic_info_from_ids(user_ids, keep_order=False):
 
     return get_basic_info_from_users(queried)
 
-# decorator that protects other users from PUT/POST/DELETE on you stuff
-# user_id _must_ be passed in as 'user_id'
-def only_me(function):
-    @wraps(function)
-    def inner(*args, **kwargs):
-        if kwargs['user_id'] != 'me':
-            return '{}', HTTP_401_UNAUTHORIZED
-        return function(*args, **kwargs)
-    return inner

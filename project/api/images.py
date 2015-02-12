@@ -1,6 +1,7 @@
 from flask import request, Blueprint, request, jsonify, make_response, current_app
 from flask.ext.login import login_user, login_required, logout_user, abort
-from project import bcrypt, ROUTE_PREPEND, utils
+from project import utils
+from project.services.auth import Auth
 from flask.ext.api import FlaskAPI, exceptions
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
@@ -19,7 +20,7 @@ def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
-images_blueprint = Blueprint(
+blueprint = Blueprint(
     'images', __name__
 )
 
@@ -33,12 +34,12 @@ def crop_image(image):
     return crop
 
 # Fix POST hang by giving preflight the OPTIONS OK it needs. Hacky but works.
-@images_blueprint.route(ROUTE_PREPEND+'/images',  methods=['OPTIONS'])
+@blueprint.route('/images',  methods=['OPTIONS'])
 def handle_preflight():
     return current_app.make_default_options_response()
 
-@images_blueprint.route(ROUTE_PREPEND+'/images', methods=['POST'])
-@login_required
+@blueprint.route('/images', methods=['POST'])
+@Auth.require(Auth.USER)
 def upload_image():
     request_error = ''
     user_id = getUserID('me')
@@ -53,8 +54,8 @@ def upload_image():
             request_error = str(e)
     return jsonify(error=request_error), HTTP_400_BAD_REQUEST
 
-@images_blueprint.route(ROUTE_PREPEND+'/images/<imageid>.'+PROFILE_FORMAT, methods=['GET'])
-@login_required
+@blueprint.route('/images/<imageid>.'+PROFILE_FORMAT, methods=['GET'])
+@Auth.require(Auth.USER)
 def get_image(imageid):
     entry = find_image_by_id(imageid)
     if entry is None:
@@ -64,8 +65,8 @@ def get_image(imageid):
     response.headers['Content-Type'] = 'image/jpeg'
     return response
 
-@images_blueprint.route(ROUTE_PREPEND+'/images/<imageid>.'+PROFILE_FORMAT, methods=['DELETE'])
-@login_required
+@blueprint.route('/images/<imageid>.'+PROFILE_FORMAT, methods=['DELETE'])
+@Auth.require(Auth.USER)
 def delete_image(imageid):
     entry = find_image_by_id(imageid)
     if entry is None:

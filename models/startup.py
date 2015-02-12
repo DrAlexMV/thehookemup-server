@@ -1,11 +1,13 @@
-from mongokit import *
-from project import Startups
-from project import connection
 from project import database_wrapper
 from bson.objectid import ObjectId
 from project import utils
 from models import user
+from mongokit import Document
 import datetime
+from project.services.database import Database
+
+Startups = Database['Startups']
+connection = Database.connection()
 
 @connection.register
 class Startup(Document):

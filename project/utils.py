@@ -43,7 +43,8 @@ def fix_term_filter(term_filter):
              output.append({entry:term_filter[entry].lower()})
     return output
 
-
+## TODO: REMOVE
+## Redundent. set.intersect does the same thing
 def arr_diff(a,b):
      # a = [1,2,3]
      # b = [2,3,4,5,6]

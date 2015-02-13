@@ -21,7 +21,7 @@ def get_invites():
     Gets all the invites for the currently logged on user
     '''
     user_id = user.getUserID('me')
-    entries = invite.find_multiple_invites({'producerObjectId':str(user_id)})
+    entries = invite.find_multiple_invites({'producerObjectId': user_id})
     invite_attributes_list = [invite.get_invite_attributes(entry) for entry in entries]
     return jsonify(error=None, invites=invite_attributes_list)
 
@@ -57,7 +57,7 @@ def validate_invite(invite_code):
     Indicates whether or not a code is valid
     '''
     try:
-        invite_entry = invite.find_invite_by_code(ObjectId(invite_code))
+        invite_entry = invite.find_invite_by_code(invite_code)
         if invite_entry is None:
             raise Exception('Code not found')
         if invite_entry.consumerObjectId is not None:

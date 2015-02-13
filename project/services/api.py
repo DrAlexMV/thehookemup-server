@@ -1,7 +1,7 @@
 import flask
 
 class API:
-	api_modules = ['users', 'images', 'search', 'startups', 'invites', 'endorsements']
+	api_modules = ['users', 'account', 'images', 'search', 'startups', 'invites', 'endorsements']
 	def __init__(self):
 		self.blueprints = []
 

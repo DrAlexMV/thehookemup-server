@@ -29,15 +29,13 @@ def signup():
     error = None
     req = request.json
     request_email = req['email'].lower()
-    print request_email
     entry = user.findSingleUser({'email': request_email})
-    print entry
     if entry is None:
         try:
-            #invite_code = req['inviteCode']
+            invite_code = req['code']
             new_user = user.create_user(req)
             database_wrapper.save_entity(new_user)
-            #invite.consumeInvite(ObjectId(invite_code), str(new_user._id))
+            invite.consume(invite_code, new_user._id)
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
         Auth.login(new_user, new_user['password'])

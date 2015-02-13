@@ -13,8 +13,8 @@ class Invite(Document):
     __collection__ = 'Invites'
     __database__ = 'thehookemup'
     structure = {
-        'producerObjectId': basestring,
-        'consumerObjectId': basestring,
+        'producerObjectId': ObjectId,
+        'consumerObjectId': ObjectId,
         'code': basestring,
         'scratchedOut': bool
     }
@@ -29,11 +29,9 @@ class Invite(Document):
 
     use_dot_notation = True
     def __repr__(self):
-        return '<Invite %r>' % (self.producerObjectId)
+        return '<Invite %r>' % str(self['producerObjectId'])
 
 def create_invite(producer_object_id):
-    #takes an object_id
-    producer_object_id=str(producer_object_id)
     invite = Invites.Invite()
     invite['producerObjectId'] = producer_object_id
     invite['code'] = str(uuid.uuid4().hex)[12:]
@@ -55,7 +53,7 @@ def find_invite_by_code(invite_code):
 def find_invite_by_id(invite_id):
     return find_invite({'_id': ObjectId(invite_id)})
 
-def consume_invite(invite_code, consumer_object_id):
+def consume(invite_code, consumer_object_id):
     entry = find_invite_by_code(invite_code)
     if entry['consumerObjectId'] != None:
         raise Exception("Code has already been consumed")

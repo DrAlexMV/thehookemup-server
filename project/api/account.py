@@ -1,8 +1,9 @@
 from flask import request, jsonify, Blueprint
 from project.services.auth import Auth
-from models import user
+from models import user, invite
 from flask_api.status import HTTP_400_BAD_REQUEST
 from bson.json_util import dumps
+from project import database_wrapper
 
 blueprint = Blueprint(
     'account', __name__
@@ -28,17 +29,18 @@ def signup():
     #TODO: comment in lines to enforce invite codes
     error = None
     req = request.json
+    password = req['password']
     request_email = req['email'].lower()
     entry = user.findSingleUser({'email': request_email})
     if entry is None:
         try:
-            invite_code = req['code']
+            invite_code = req['invite']
             new_user = user.create_user(req)
             database_wrapper.save_entity(new_user)
-            invite.consume(invite_code, new_user._id)
+            invite.consume(invite_code, new_user['_id'])
+            print Auth.login(new_user, password), new_user, password
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        Auth.login(new_user, new_user['password'])
         return user.get_basic_info_with_security(new_user)
     else:
         error = 'Email is already in use'

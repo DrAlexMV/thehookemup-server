@@ -57,9 +57,9 @@ class Auth:
             return decorated_function
         return login_required
 
-    def login(self, user_object, password_hash):
+    def login(self, user_object, password):
         if user_object is not None:
-            if self.__bcrypt.check_password_hash(user_object['password'], password_hash):
+            if self.__bcrypt.check_password_hash(user_object['password'], password):
                 login_user(user_object)            
             else:
                 return 'Invalid password'

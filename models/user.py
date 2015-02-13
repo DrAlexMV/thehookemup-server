@@ -1,7 +1,8 @@
 from mongokit import Document
 import datetime
-from project import utils
+from project import utils, config
 from project import database_wrapper
+from models import invite
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
 from flask.ext.api.status import HTTP_401_UNAUTHORIZED
@@ -114,15 +115,19 @@ class User(Document):
         return Auth.USER # should set Auth.GHOST based on flags in schema
 
 def create_user(attributes):
-    user = Users.User()
-    attributes['password'] = Auth.hash_password(['password'])
+    new_user = Users.User()
+    attributes['password'] = Auth.hash_password(attributes['password'])
     attributes['email'] = attributes['email'].lower()
-    utils.mergeFrom(attributes, user, User.required_fields)
+    utils.mergeFrom(attributes, new_user, User.required_fields)
     optional = User.basic_info_fields.difference(User.required_fields)
     optional.remove('_id')
-    utils.mergeFrom(attributes, user, optional, require=False)
+    utils.mergeFrom(attributes, new_user, optional, require=False)
+    new_user.save()
 
-    return user
+    # give them a few invites
+    for i in range(config['NEW_USER_INVITE_NUM']):
+        invite.create_invite(new_user['_id'])
+    return new_user
 
 def get_skills_from_name(list_of_skill_name):
     output = []

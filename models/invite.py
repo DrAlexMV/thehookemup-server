@@ -55,8 +55,10 @@ def find_invite_by_id(invite_id):
 
 def consume(invite_code, consumer_object_id):
     entry = find_invite_by_code(invite_code)
-    if entry['consumerObjectId'] != None:
-        raise Exception("Code has already been consumed")
+    if entry is None:
+        raise Exception('Invalid code')
+    if entry['consumerObjectId'] is not None:
+        raise Exception('Code has already been consumed')
     entry['consumerObjectId'] = consumer_object_id
     entry.save()
 

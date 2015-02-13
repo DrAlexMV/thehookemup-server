@@ -147,8 +147,8 @@ def put_skills(user,req):
     skills = req.get('skills')
     previous_skills_list = get_skills_from_id(user['skills'])
     put_skills_list = get_skills_from_name(skills)
-    removed_skills = utils.arr_diff(previous_skills_list,put_skills_list)
-    added_skills = utils.arr_diff(put_skills_list,previous_skills_list)
+    removed_skills = set(previous_skills_list).difference(put_skills_list)
+    added_skills = set(put_skills_list).difference(previous_skills_list)
 
     for removed_skill in removed_skills:
         if removed_skill == None:

@@ -138,9 +138,10 @@ def user_remove_endorsement(entity_id):
     return remove_endorsement('me', entity_id)
 
 
-def populate_counts(users):
-    for user in users:
-        user['endorsementCount'] = count(entity_id=user['_id'])
+def populate_counts(entities):
+    for entity in entities:
+        entity['endorsementCount'] = count(entity_id=entity['_id'])
+
 
 
 @inject_entity

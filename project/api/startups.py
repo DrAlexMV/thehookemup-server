@@ -180,3 +180,4 @@ def update_overview(startup_id):
         return '{}'
     except Exception as e:
         return jsonify({'error': str(e)}), HTTP_400_BAD_REQUEST
+

@@ -1,8 +1,13 @@
 from flask import request, jsonify, Blueprint
 from flask.ext.login import login_required
+<<<<<<< HEAD:project/api/search.py
 from project import utils
 from project.services.auth import Auth
 from models import user, endorsement
+=======
+from project import ROUTE_PREPEND, utils
+from models import user, endorsement, startup
+>>>>>>> Added full text search for startups:project/search/views.py
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
 from bson.json_util import dumps
@@ -67,6 +72,7 @@ def search():
 
     ## now turn the queries into basic users
     user_ids = map(ObjectId, (entry['_id'] for entry in results.data))
+    #TODO: Why can't we inject endorsements into the objects returned from elastic?
     basic_users = user.get_basic_info_from_ids(user_ids, keep_order=True)
     endorsement.populate_counts(basic_users)
     return dumps({'results': basic_users, 'metadata': results.metadata, 'error': None})
@@ -158,38 +164,42 @@ def search_startups():
     """
     Example Usage:
 
-    GET http://localhost:5000/api/v1/search/startups?rank=endorsements&results_per_page=10&page=2
+    GET http://localhost:5000/api/v1/search/startups?rank=trending&results_per_page=10&page=2
 
     This will return the 10 results on the 2nd page, ordered by number of endorsements
 
+    To full text search just omit the ranking parameter, and pass a query string. For example, use
+
+    GET http://localhost:5000/api/v1/search/startups?query_string=some text to search for&results_per_page=10&page=2
+
 
     """
-    
-   # query_string = request.args.get('query_string')
+
+    query_string = request.args.get('query_string')
     results_per_page = request.args.get('results_per_page')
     page = request.args.get('page')
     rank = request.args.get('rank')
 
     try:
-       # if query_string is not None:
-        #    query_string = query_string.lower()
+        if query_string is not None:
+            query_string = query_string.lower()
         if results_per_page is not None:
             results_per_page = int(results_per_page)
-        else:
-            results_per_page = 20
-
         if page is not None:
             page = int(page)
+
+        if rank=='trending':
+            #get results from mongo for now
+            results = endorsement.get_entities_by_num_endorsements('startup', page, results_per_page)
+            return dumps({'results': results, 'metadata': None, 'error': None})
         else:
-            page = 1
-
-        if(rank!='endorsements'):
-            return jsonify(error='Invalid ranking type')
-
-         #get results from mongo for now
-        results = endorsement.get_entities_by_num_endorsements('startup', page, results_per_page)
-
-        return dumps({'results': results, 'metadata': None, 'error': None})
+            results = startup.simple_search(query_string, results_per_page, page)
+            print(results.data)
+            startup_ids = map(ObjectId, (entry['_id'] for entry in results.data))
+            #TODO: Why can't we inject endorsements into the objects returned from elastic?
+            basic_startups = map(startup.get_basic_startup_by_id, startup_ids)
+            endorsement.populate_counts(basic_startups)
+            return dumps({'results': basic_startups, 'metadata': results.metadata, 'error': None})
 
     except Exception as e:
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST

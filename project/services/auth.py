@@ -7,6 +7,7 @@ from project.services.database import Database
 from bson.objectid import ObjectId
 from functools import wraps
 
+
 class Auth:
     GHOST = 1
     USER = 2
@@ -14,7 +15,7 @@ class Auth:
     class Anonymous(AnonymousUserMixin):
         def __init__(self):
             self._id = None
-    
+
         def get_id(self):
             return unicode('')
 
@@ -60,12 +61,22 @@ class Auth:
     def login(self, user_object, password):
         if user_object is not None:
             if self.__bcrypt.check_password_hash(user_object['password'], password):
-                login_user(user_object)            
+                login_user(user_object)
             else:
                 return 'Invalid password'
         else:
             return 'Invalid email'
         return None
+
+    def login_social(self, login_type, token):
+        user_object = None
+
+        try:
+            user_object = SocialSignin.validate(login_type)
+        except SocialSignin.Invalid as e:
+            return e
+
+        login_user(user_object)
 
     def logout(self):
         logout_user()

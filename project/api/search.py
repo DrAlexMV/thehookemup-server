@@ -1,5 +1,4 @@
 from flask import request, jsonify, Blueprint
-from flask.ext.login import login_required
 from project import utils
 from project.services.auth import Auth
 from models import user, endorsement, startup
@@ -13,7 +12,6 @@ import ast
 blueprint = Blueprint(
     'search', __name__
 )
-
 
 
 @blueprint.route('/search', methods=['GET'])
@@ -43,7 +41,7 @@ def search():
         query_string = request.args.get('query_string')
         results_per_page = request.args.get('results_per_page')
         page = request.args.get('page')
-        
+
         keyed_queries = {}
         for constraint, value in request.args.items():
             if constraint == 'query_string' or constraint == 'results_per_page' or constraint == 'page':

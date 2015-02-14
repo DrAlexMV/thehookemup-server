@@ -5,15 +5,16 @@ from models.user import getUserID, findUserByID, get_basic_info_with_security, g
 from models.startup import find_startup_by_id, get_basic_startup, get_basic_startups_from_ids
 from itertools import groupby
 from mongokit.paginator import Paginator
-
+from project import config
 
 Endorsements = Database['Endorsements']
 connection = Database.connection()
 
+
 @connection.register
 class Endorsement(Document):
     __collection__ = 'Endorsements'
-    __database__ = 'thehookemup'
+    __database__ = config['DATABASE_NAME']
     structure = {
         'endorsees': [{'_id': ObjectId, 'entityType': basestring}],
         'endorsers': [{'_id': ObjectId, 'entityType': basestring}],
@@ -152,9 +153,9 @@ def has_entity_endorsed(endorser, endorsee_id):
 
 
 def get_entities_by_num_endorsements(entity_type, page, results_per_page):
-     endorsements = Endorsements.Endorsement.find( sort = [('endorsers', -1)])
-     paged_endorsements = Paginator(endorsements, page, results_per_page)
-     endorsements = paged_endorsements.items
-     ranked_entities = [{'_id':endorsement['_id'], 'entityType':endorsement['entityType']} for endorsement in endorsements]
-     startups = filter(lambda e: e['entityType'] == entity_type, ranked_entities)
-     return map(lambda e:find_entity_basic_info_by_type(e['_id'], entity_type), startups)
+    endorsements = Endorsements.Endorsement.find( sort = [('endorsers', -1)])
+    paged_endorsements = Paginator(endorsements, page, results_per_page)
+    endorsements = paged_endorsements.items
+    ranked_entities = [{'_id':endorsement['_id'], 'entityType':endorsement['entityType']} for endorsement in endorsements]
+    startups = filter(lambda e: e['entityType'] == entity_type, ranked_entities)
+    return map(lambda e:find_entity_basic_info_by_type(e['_id'], entity_type), startups)

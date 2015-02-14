@@ -1,17 +1,17 @@
 from mongokit import Document
 from project.services.database import Database
-from project import database_wrapper
-from project import utils
+from project import utils, config
 from bson.objectid import ObjectId
 from bson import uuid
 
 Invites = Database['Invites']
 connection = Database.connection()
 
+
 @connection.register
 class Invite(Document):
     __collection__ = 'Invites'
-    __database__ = 'thehookemup'
+    __database__ = config['DATABASE_NAME']
     structure = {
         'producerObjectId': ObjectId,
         'consumerObjectId': ObjectId,
@@ -28,6 +28,7 @@ class Invite(Document):
     basic_fields = {'_id', 'code', 'producerObjectId', 'consumerObjectId', 'scratchedOut'}
 
     use_dot_notation = True
+
     def __repr__(self):
         return '<Invite %r>' % str(self['producerObjectId'])
 

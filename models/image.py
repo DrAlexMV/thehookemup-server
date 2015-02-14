@@ -1,12 +1,13 @@
 from mongokit import Document
 from project.services.database import Database
-from project import utils
+from project import config
 import bson
 import datetime
 from bson.objectid import ObjectId
 
 DatabaseImages = Database['DatabaseImages']
 connection = Database.connection()
+
 
 def max_length(length):
     def validate(value):
@@ -15,10 +16,11 @@ def max_length(length):
         raise Exception('%s must be at most %s characters long' % length)
     return validate
 
+
 @connection.register
 class DatabaseImage(Document):
     __collection__ = 'DatabaseImages'
-    __database__ = 'thehookemup'
+    __database__ = config['DATABASE_NAME']
     structure = {
         'data': bson.binary.Binary,
         'created': datetime.datetime,
@@ -34,8 +36,10 @@ class DatabaseImage(Document):
     validators = {}
 
     use_dot_notation = True
+
     def __repr__(self):
         return '<DatabaseImage created on %s>' % (self.created)
+
 
 def create_image(image_blob, userid):
     image = DatabaseImages.DatabaseImage()
@@ -44,6 +48,6 @@ def create_image(image_blob, userid):
     image.save()
     return image['_id']
 
+
 def find_image_by_id(image_id):
     return DatabaseImages.DatabaseImage.find_one({'_id': ObjectId(image_id)})
-

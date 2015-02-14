@@ -2,12 +2,12 @@ from flask import request, jsonify, Blueprint
 from project.services.auth import Auth
 from models import user, invite
 from flask_api.status import HTTP_400_BAD_REQUEST
-from bson.json_util import dumps
 from project import database_wrapper
 
 blueprint = Blueprint(
     'account', __name__
 )
+
 
 @blueprint.route('/login', methods=['POST'])
 def login():
@@ -21,12 +21,27 @@ def login():
     user_object = user.findSingleUser({'email': email})
     error = Auth.login(user_object, password_hash)
     if error:
-        return jsonify(LoggedIn=False, error=error),HTTP_400_BAD_REQUEST
+        return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
     return user.get_basic_info_with_security(user_object)
+
+
+@blueprint.route('/login-social', methods=['POST'])
+def login_social():
+    req = request.json
+    try:
+        social_type = req['social_type']
+        token = req['token']
+    except:
+        return '', HTTP_400_BAD_REQUEST
+
+    error = Auth.login_social(social_type, token)
+    if error:
+        return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
+    return user.get_basic_info_with_security(user_object)
+
 
 @blueprint.route('/signup', methods=['POST'])
 def signup():
-    #TODO: comment in lines to enforce invite codes
     error = None
     req = request.json
     password = req['password']

@@ -12,10 +12,11 @@ Startups = Database['Startups']
 connection = Database.connection()
 es = Elastic.connection()
 
+
 @connection.register
 class Startup(Document):
     __collection__ = 'Startups'
-    __database__ = 'thehookemup'
+    __database__ = config['DATABASE_NAME']
     structure = {
         'name': basestring,
         'date': datetime.datetime,

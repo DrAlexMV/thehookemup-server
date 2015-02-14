@@ -5,7 +5,6 @@ from project import database_wrapper
 from models import invite
 from bson.objectid import ObjectId
 from flask.ext.login import current_user
-from flask.ext.api.status import HTTP_401_UNAUTHORIZED
 from flask import jsonify
 import skill
 from project.services.database import Database
@@ -14,6 +13,7 @@ from project.services.auth import Auth
 Users = Database['Users']
 connection = Database.connection()
 
+
 def max_length(length):
     def validate(value):
         if len(value) <= length:
@@ -21,10 +21,11 @@ def max_length(length):
         raise Exception('%s must be at most %s characters long' % length)
     return validate
 
+
 @connection.register
 class User(Document):
     __collection__ = 'Users'
-    __database__ = 'thehookemup'
+    __database__ = config['DATABASE_NAME']
     structure = {
         'firstName': basestring,
         'lastName': basestring,
@@ -41,17 +42,17 @@ class User(Document):
             'title': basestring,
             'description': basestring,
         }],
-        'projects':[{
+        'projects': [{
             'date': basestring,
             'title': basestring,
             'description': basestring,
             'details': [{
                 'title': basestring,
                 'description': basestring
-                        }],
+            }],
             'people':[basestring]
         }],
-        'skills':[basestring], #tags
+        'skills': [basestring], #tags
         'edges': {
             'connections': [{'user': basestring, 'type': basestring, 'message': basestring,
                              'date': datetime.datetime}],  # date when request was sent
@@ -61,7 +62,7 @@ class User(Document):
 
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'roles']
-    
+
     connection_types = {'CONNECTED': 'c', 'PENDING_APPROVAL': 'pa', 'SENT': 's'}
 
     basic_info_fields = {
@@ -83,7 +84,6 @@ class User(Document):
         'skills'
     }
 
-
     default_values = {
         'dateJoined': datetime.datetime.utcnow
     }
@@ -94,11 +94,11 @@ class User(Document):
         'password': max_length(120)
     }
     use_dot_notation = True
+
     def __repr__(self):
         return '<User %r>' % (self.firstName)
 
-    #### Required to be implemented for login manager ####
-
+    # Required to be implemented for login manager
     def is_authenticated(self):
         return True
 
@@ -112,7 +112,9 @@ class User(Document):
         return unicode(self['_id'])
 
     def get_access_level(self):
-        return Auth.USER # should set Auth.GHOST based on flags in schema
+        # should set Auth.GHOST based on flags in schema
+        return Auth.USER
+
 
 def create_user(attributes):
     new_user = Users.User()
@@ -129,11 +131,12 @@ def create_user(attributes):
         invite.create_invite(new_user['_id'])
     return new_user
 
+
 def get_skills_from_name(list_of_skill_name):
     output = []
     for name in list_of_skill_name:
-        found_skill = skill.find_skill({"name":name})
-        if found_skill == None:
+        found_skill = skill.find_skill({"name": name})
+        if found_skill is None:
             #need to create a new skill
             output.append(skill.create_skill(name, 0))
         else:
@@ -156,14 +159,14 @@ def put_skills(user,req):
     added_skills = set(put_skills_list).difference(previous_skills_list)
 
     for removed_skill in removed_skills:
-        if removed_skill == None:
+        if removed_skill is None:
             #this should never happen
             raise Exception("User had reference to skill that doesn't exist")
         else:
             skill.decrement_skill(removed_skill)
 
     for added_skill in added_skills:
-        if added_skill == None:
+        if added_skill is None:
             #this should never happen
             raise Exception("Something broke.. Added skill is None?!")
         else:
@@ -173,11 +176,13 @@ def put_skills(user,req):
     database_wrapper.save_entity(user)
     return True
 
+
 def put_interests(user, req):
     interests = req.get('interests')
     user.interests = interests
     database_wrapper.save_entity(user)
     return True
+
 
 def put_projects(user, req):
     projects = req.get('projects')
@@ -185,10 +190,12 @@ def put_projects(user, req):
     database_wrapper.save_entity(user)
     return True
 
+
 def set_initialization_level(user, initialization_level):
     user['initialization'] = initialization_level
     database_wrapper.save_entity(user)
     return True
+
 
 #TODO: clean this up, use the details field defined above
 def get_user_details(user, me=False):
@@ -322,7 +329,7 @@ def remove_connection(this_user, other_user_id):
             break
     else:
         return False
-    
+
     this_user['edges']['connections'].pop(index)
     return True
 
@@ -358,7 +365,6 @@ def handle_connection(other_user, message):
     else:
         raise Exception('invalid action on this user')
 
-
 def get_basic_info_with_security(userObject): # O(N)
     fields = list(User.basic_info_fields)
     conn_type = connection_type(userObject)
@@ -390,4 +396,3 @@ def get_basic_info_from_ids(user_ids, keep_order=False):
         return get_basic_info_from_users(sorted_queried)
 
     return get_basic_info_from_users(queried)
-

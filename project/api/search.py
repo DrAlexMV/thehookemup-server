@@ -1,13 +1,8 @@
 from flask import request, jsonify, Blueprint
 from flask.ext.login import login_required
-<<<<<<< HEAD:project/api/search.py
 from project import utils
 from project.services.auth import Auth
-from models import user, endorsement
-=======
-from project import ROUTE_PREPEND, utils
 from models import user, endorsement, startup
->>>>>>> Added full text search for startups:project/search/views.py
 from flask.ext.api.status import *
 from bson.objectid import ObjectId
 from bson.json_util import dumps
@@ -174,7 +169,6 @@ def search_startups():
 
 
     """
-
     query_string = request.args.get('query_string')
     results_per_page = request.args.get('results_per_page')
     page = request.args.get('page')
@@ -194,7 +188,6 @@ def search_startups():
             return dumps({'results': results, 'metadata': None, 'error': None})
         else:
             results = startup.simple_search(query_string, results_per_page, page)
-            print(results.data)
             startup_ids = map(ObjectId, (entry['_id'] for entry in results.data))
             #TODO: Why can't we inject endorsements into the objects returned from elastic?
             basic_startups = map(startup.get_basic_startup_by_id, startup_ids)

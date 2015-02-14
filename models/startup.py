@@ -1,15 +1,16 @@
 from project import database_wrapper
-from project import es, DATABASE_NAME
 from bson.objectid import ObjectId
 from project import utils
 from mongokit import Document
 from models import user, search_results
 import datetime
+from project.config import config
+from project.services.elastic import Elastic
 from project.services.database import Database
 
 Startups = Database['Startups']
 connection = Database.connection()
-
+es = Elastic.connection()
 
 @connection.register
 class Startup(Document):
@@ -232,7 +233,7 @@ def simple_search(query_string, results_per_page, page):
     of  startups that have those keywords in any fields.
     This is to be used when filter params are not specified.
     """
-    if query_string==None:
+    if query_string is None:
         #simple query to get all results
         query = {
             "query": {
@@ -251,9 +252,9 @@ def simple_search(query_string, results_per_page, page):
                 }
             }
         }
-    if page is not None or results_per_page is not None:
-        res = es.search(index=DATABASE_NAME, doc_type='Startup', body=query)['hits']['hits']
+    if page is None or results_per_page is None:
+        res = es.search(index=config['DATABASE_NAME'], doc_type='Startup', body=query)['hits']['hits']
     else:
-        res = es.search(index=DATABASE_NAME, doc_type='Startup', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
-    number_results = es.count(index=DATABASE_NAME, doc_type='Startup', body=query)['count']
+        res = es.search(index=config['DATABASE_NAME'], doc_type='Startup', body=query, from_=page*results_per_page, size=results_per_page)['hits']['hits']
+    number_results = es.count(index=config['DATABASE_NAME'], doc_type='Startup', body=query)['count']
     return search_results.SearchResults(res,{'numberResults': number_results})

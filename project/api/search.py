@@ -32,6 +32,7 @@ def search():
     will search for all users that have the words hardware, java, and ibm anywhere in their information,
     and it will then filter those results to only results that have the role set to "programmer" and the
     firstName set to "tanner". Setting the results_per_page and page behaves as you would expect it to.
+    Indexing for pagination starts at 0.
 
     Results are returned in the form of a list of json results.
 
@@ -161,7 +162,7 @@ def search_startups():
 
     GET http://localhost:5000/api/v1/search/startups?rank=trending&results_per_page=10&page=2
 
-    This will return the 10 results on the 2nd page, ordered by number of endorsements
+    This will return the 10 results on the 2nd page (indexing starts at 0), ordered by number of endorsements. 
 
     To full text search just omit the ranking parameter, and pass a query string. For example, use
 

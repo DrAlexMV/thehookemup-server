@@ -32,6 +32,7 @@ class Invite(Document):
     def __repr__(self):
         return '<Invite %r>' % str(self['producerObjectId'])
 
+
 def create_invite(producer_object_id):
     invite = Invites.Invite()
     invite['producerObjectId'] = producer_object_id
@@ -39,20 +40,26 @@ def create_invite(producer_object_id):
     invite.save()
     return invite
 
+
 def get_invite_attributes(invite):
     return utils.jsonFields(invite, Invite.basic_fields, response=False)
+
 
 def find_invite(map_attributes):
     return Invites.Invite.find_one(map_attributes)
 
+
 def find_multiple_invites(mapAttributes):
     return Invites.Invite.find(mapAttributes)
+
 
 def find_invite_by_code(invite_code):
     return find_invite({'code': invite_code})
 
+
 def find_invite_by_id(invite_id):
     return find_invite({'_id': ObjectId(invite_id)})
+
 
 def consume(invite_code, consumer_object_id):
     entry = find_invite_by_code(invite_code)
@@ -62,6 +69,7 @@ def consume(invite_code, consumer_object_id):
         raise Exception('Code has already been consumed')
     entry['consumerObjectId'] = consumer_object_id
     entry.save()
+
 
 def put_invite(invite_id, fields):
     entry = find_invite_by_id(invite_id)

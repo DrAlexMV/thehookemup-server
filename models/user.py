@@ -27,6 +27,7 @@ class User(Document):
     __collection__ = 'Users'
     __database__ = config['DATABASE_NAME']
     structure = {
+        'type': basestring,
         'firstName': basestring,
         'lastName': basestring,
         'email': basestring,
@@ -46,11 +47,8 @@ class User(Document):
             'date': basestring,
             'title': basestring,
             'description': basestring,
-            'details': [{
-                'title': basestring,
-                'description': basestring
-            }],
-            'people':[basestring]
+            'details': [{'title': basestring, 'description': basestring}],
+            'people': [basestring]
         }],
         'skills': [basestring], #tags
         'edges': {
@@ -58,7 +56,7 @@ class User(Document):
                              'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
         },
-        'initialization': int # None: init finished--don't show user wizard. All other numbers: step number
+        'initialization': int  # None: init finished--don't show user wizard. All other numbers: step number
 
     }
     required_fields = ['firstName', 'lastName', 'email', 'password', 'roles']
@@ -85,14 +83,17 @@ class User(Document):
     }
 
     default_values = {
-        'dateJoined': datetime.datetime.utcnow
+        'dateJoined': datetime.datetime.utcnow,
+        'type': 'user'
     }
+
     validators = {
         'firstName': max_length(50),
         'lastName': max_length(50),
         'email': max_length(120),
         'password': max_length(120)
     }
+
     use_dot_notation = True
 
     def __repr__(self):
@@ -320,6 +321,7 @@ def confirm_connection(other_user):
     database_wrapper.save_entity(me)
     database_wrapper.save_entity(other_user)
 
+
 def remove_connection(this_user, other_user_id):
     index = None
 
@@ -332,6 +334,7 @@ def remove_connection(this_user, other_user_id):
 
     this_user['edges']['connections'].pop(index)
     return True
+
 
 def remove_user_connection(other_user):
     me = findUserByID('me')

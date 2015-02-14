@@ -18,6 +18,7 @@ class Startup(Document):
     __collection__ = 'Startups'
     __database__ = config['DATABASE_NAME']
     structure = {
+        'type': basestring,
         'name': basestring,
         'date': datetime.datetime,
         'website': basestring,
@@ -51,6 +52,10 @@ class Startup(Document):
     required_fields = ['name', 'description']
 
     basic_info_fields = {'name', 'date', 'website', 'handles', 'description', 'picture', 'owners', 'markets', '_id'}
+
+    default_values = {
+        "type": "startup"
+    }
 
     def to_searchable(self):
         return {

@@ -1,5 +1,6 @@
 import mongokit
 
+
 class Database:
     def __init__(self):
         self.__connection = None

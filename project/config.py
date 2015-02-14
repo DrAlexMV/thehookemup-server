@@ -16,6 +16,7 @@ config['DEBUG'] = False
 config['SECRET_KEY'] = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
 config['DATABASE_NAME'] = 'thehookemup'
 config['ROUTE_PREPEND'] = '/api/v1'
+config['FB_SIGNIN_APPID'] = '744792018972866'
 config['FB_SIGNIN_APPSECRET'] = 'd12045378fed762da38f9a882f727828'
 
 config['NEW_USER_INVITE_NUM'] = 3

@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from project.services.auth import Auth
+from project.services.auth import Auth, current_user
 from models import user, invite
 from flask_api.status import HTTP_400_BAD_REQUEST
 from project import database_wrapper
@@ -37,7 +37,7 @@ def login_social():
     error = Auth.login_social(social_type, token)
     if error:
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
-    return user.get_basic_info_with_security(user_object)
+    return user.get_basic_info_with_security(current_user)
 
 
 @blueprint.route('/signup', methods=['POST'])

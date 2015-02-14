@@ -1,12 +1,13 @@
 from flask import Flask
 from flask import jsonify
-from flask.ext.api.status import *
-from flask.ext.login import LoginManager
+from flask.ext.api.status import HTTP_404_NOT_FOUND
 from json_rest import CustomJSONEncoder
 
 from config import config
 
 from project.services.database import Database
+Database.connect(config)
+
 from project.services.elastic import Elastic
 from project.services.auth import Auth
 from project.services.cors import Cors
@@ -22,7 +23,7 @@ app.debug = config['DEBUG']
 app.json_encoder = CustomJSONEncoder
 
 # Init services
-Database.connect(config)
+
 
 Elastic.connect(config)
 
@@ -31,6 +32,7 @@ Auth.init_app(app, config)
 API.configure(config)
 
 API.register_blueprints(app, config)
+
 
 @app.errorhandler(404)
 def not_found(error=None):

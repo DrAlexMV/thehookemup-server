@@ -4,6 +4,7 @@ from flask import jsonify
 from flask.ext.bcrypt import Bcrypt
 from flask.ext.api.status import HTTP_401_UNAUTHORIZED
 from project.services.database import Database
+from project.services.social_signin import SocialSignin
 from bson.objectid import ObjectId
 from functools import wraps
 
@@ -72,9 +73,9 @@ class Auth:
         user_object = None
 
         try:
-            user_object = SocialSignin.validate(login_type)
+            user_object = SocialSignin.verify(login_type, token)
         except SocialSignin.Invalid as e:
-            return e
+            return str(e)
 
         login_user(user_object)
 

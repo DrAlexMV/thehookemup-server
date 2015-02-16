@@ -43,7 +43,7 @@ def remove_skill(skill):
     obj_id = str(skill._id)
     headers = {'content-type': 'application/json'}
     r = requests.delete("http://"+config['ELASTIC_HOST'] + ':' +
-                        str(config['ELASTIC_PORT']) + "/skills/skill/"+obj_id, headers=headers)
+                        str(config['ELASTIC_PORT']) + '/'+config['DATABASE_NAME']+'-skills/skill/'+obj_id, headers=headers)
     skill.delete()
 
 
@@ -52,9 +52,9 @@ def save_skill(skill):
     skill.save()
     obj_id = str(skill._id)
     headers = {'content-type': 'application/json'}
-    r = requests.delete("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, headers=headers)
+    r = requests.delete('http://'+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+'/'+config['DATABASE_NAME']+'-skills/skill/'+obj_id, headers=headers)
     searchable_entity = create_simple_skillJSON(skill)
-    r = requests.put("http://"+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+"/skills/skill/"+obj_id, data=json.dumps(searchable_entity), headers=headers)
+    r = requests.put('http://'+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+'/'+config['DATABASE_NAME']+'-skills/skill/'+obj_id, data=json.dumps(searchable_entity), headers=headers)
 
 
 def save_to_elastic(entity, doc_type, body_to_save):

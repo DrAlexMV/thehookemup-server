@@ -160,7 +160,7 @@ def search_startups():
 
     GET http://localhost:5000/api/v1/search/startups?rank=trending&results_per_page=10&page=2
 
-    This will return the 10 results on the 2nd page (indexing starts at 0), ordered by number of endorsements. 
+    This will return the 10 results on the 2nd page (indexing starts at 0), ordered by number of endorsements.
 
     To full text search just omit the ranking parameter, and pass a query string. For example, use
 

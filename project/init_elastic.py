@@ -75,5 +75,5 @@ def generate_search_structure(es):
     }
 
     headers = {'content-type': 'application/json'}
-    r = requests.put("http://" + config['ELASTIC_HOST'] + ':' + str(config['ELASTIC_PORT']) + "/skills",
+    r = requests.put("http://" + config['ELASTIC_HOST'] + ':' + str(config['ELASTIC_PORT']) + "/" +config['DATABASE_NAME']+"-skills",
                      data=json.dumps(payload), headers=headers)

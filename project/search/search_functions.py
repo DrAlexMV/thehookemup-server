@@ -117,7 +117,7 @@ def get_autocomplete_skills(text, num_results):
         }
     }
     headers = {'content-type': 'application/json'}
-    res = requests.post("http://localhost:9200/skills/_suggest", data=json.dumps(query), headers=headers)
+    res = requests.post('http://localhost:9200/'+config['DATABASE_NAME']+ '-skills/_suggest', data=json.dumps(query), headers=headers)
     return res.json()['skills'][0]['options']
 
 def simple_search_skills(text, num_results):
@@ -150,7 +150,7 @@ def simple_search_skills(text, num_results):
         }
 
     headers = {'content-type': 'application/json'}
-    url = "http://"+config['ELASTIC_HOST']+":"+str(config['ELASTIC_PORT'])+"/skills/_search?size="+str(num_results)
+    url = 'http://'+config['ELASTIC_HOST']+":"+str(config['ELASTIC_PORT'])+'/' + config['DATABASE_NAME']+ '-skills/_search?size='+str(num_results)
     res = requests.post(url, data=json.dumps(query), headers=headers)
     unfiltered_results = res.json()['hits']['hits']
     filtered_results = map(lambda result: {"name":result["_source"]["name"], "occurrences":result["_source"]["occurrences"]}, unfiltered_results)

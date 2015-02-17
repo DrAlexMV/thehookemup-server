@@ -13,6 +13,7 @@ class Auth:
     GHOST = 1
     USER = 2
     ADMIN = 3
+    SUPER_ADMIN = 4
 
     class Anonymous(AnonymousUserMixin):
         def __init__(self):

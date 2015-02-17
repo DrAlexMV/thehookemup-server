@@ -51,7 +51,6 @@ def create_invites():
         return jsonify(error=str(e))
 
 @blueprint.route('/invites/validate/<invite_code>', methods=['GET'])
-@Auth.require(Auth.USER)
 def validate_invite(invite_code):
     '''
     Indicates whether or not a code is valid

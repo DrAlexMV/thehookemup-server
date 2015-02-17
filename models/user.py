@@ -44,8 +44,7 @@ class User(BaseUser):
             'connections': [{'user': basestring, 'type': basestring, 'message': basestring,
                              'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
-        },
-        'initialization': int  # None: init finished--don't show user wizard. All other numbers: step number
+        }
 
     }
 
@@ -77,26 +76,6 @@ class User(BaseUser):
 
     def __repr__(self):
         return '<User %r>' % (self.firstName)
-
-    # Required to be implemented for login manager
-    def is_authenticated(self):
-        return True
-
-    def activate(self):
-        self["activated"] = True
-
-    def is_active(self):
-        return self["activated"]
-
-    def is_anonymous(self):
-        return False
-
-    def get_id(self):
-        return unicode(self['_id'])
-
-    def get_access_level(self):
-        # should set Auth.GHOST based on flags in schema
-        return Auth.USER
 
 
 def create_user(attributes):

@@ -22,7 +22,7 @@ class BaseUser(Document):
         "lastName": unicode,
         "email": unicode,
         "password": basestring,
-        "activated": bool
+        "permissionLevel": int
     }
 
     validators = {
@@ -32,26 +32,35 @@ class BaseUser(Document):
         "password": max_length(120)
     }
 
-    required_fields = ["firstName", "lastName", "email", "password", "activated"]
+    required_fields = ["firstName", "lastName", "email", "password", "permissionLevel"]
 
     basic_info_fields = {
         "_id",
         "firstName",
         "lastName",
-        "activated"
+        "permissionLevel"
     }
 
     def to_basic(self):
         return {k: self[k] for k in self.basic_info_fields}
 
     def get_access_level(self):
-        return Auth.GHOST
+        return self["permissionLevel"]
+
+    def is_authenticated(self):
+        return True
+
+    def is_anonymous(self):
+        return False
+
+    def get_id(self):
+        return unicode(self['_id'])
 
 
 def prepare(attributes):
     attributes_copy = copy.deepcopy(attributes)
     attributes_copy['password'] = Auth.hash_password(attributes['password'])
     attributes_copy['email'] = attributes['email'].lower()
-    attributes_copy['activated'] = False
+    attributes_copy['permissionLevel'] = Auth.GHOST
     return attributes_copy
 

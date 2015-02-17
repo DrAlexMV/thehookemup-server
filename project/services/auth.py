@@ -12,6 +12,7 @@ from functools import wraps
 class Auth:
     GHOST = 1
     USER = 2
+    ADMIN = 3
 
     class Anonymous(AnonymousUserMixin):
         def __init__(self):

@@ -12,6 +12,7 @@ blueprint = Blueprint(
     'startups', __name__
 )
 
+
 def not_owned(startup_object):
     user_id = getUserID('me')
 
@@ -22,6 +23,7 @@ def not_owned(startup_object):
         return '{}', HTTP_401_NOT_AUTHORIZED
 
     return None
+
 
 @blueprint.route('/startups', methods=['POST'])
 @Auth.require(Auth.USER)

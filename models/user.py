@@ -1,5 +1,6 @@
 from mongokit import Document
 import datetime
+from models.base_user import BaseUser, prepare
 from project import utils, config
 from project import database_wrapper
 from models import invite
@@ -14,24 +15,12 @@ Users = Database['Users']
 connection = Database.connection()
 
 
-def max_length(length):
-    def validate(value):
-        if len(value) <= length:
-            return True
-        raise Exception('%s must be at most %s characters long' % length)
-    return validate
-
-
 @connection.register
-class User(Document):
+class User(BaseUser):
     __collection__ = 'Users'
     __database__ = config['DATABASE_NAME']
+
     structure = {
-        'type': basestring,
-        'firstName': basestring,
-        'lastName': basestring,
-        'email': basestring,
-        'password': basestring,
         'dateJoined': datetime.datetime,
         'graduationYear': int,
         'major': basestring,
@@ -59,21 +48,19 @@ class User(Document):
         'initialization': int  # None: init finished--don't show user wizard. All other numbers: step number
 
     }
-    required_fields = ['firstName', 'lastName', 'email', 'password', 'roles']
+
+    required_fields = ['roles']
 
     connection_types = {'CONNECTED': 'c', 'PENDING_APPROVAL': 'pa', 'SENT': 's'}
 
-    basic_info_fields = {
-        'firstName',
-        'lastName',
+    basic_info_fields = BaseUser.basic_info_fields | {
         'dateJoined',
         'roles',
         'graduationYear',
         'major',
         'university',
         'description',
-        'picture',
-        '_id'
+        'picture'
     }
 
     details = {
@@ -83,15 +70,7 @@ class User(Document):
     }
 
     default_values = {
-        'dateJoined': datetime.datetime.utcnow,
-        'type': 'user'
-    }
-
-    validators = {
-        'firstName': max_length(50),
-        'lastName': max_length(50),
-        'email': max_length(120),
-        'password': max_length(120)
+        'dateJoined': datetime.datetime.utcnow
     }
 
     use_dot_notation = True
@@ -103,8 +82,11 @@ class User(Document):
     def is_authenticated(self):
         return True
 
+    def activate(self):
+        self["activated"] = True
+
     def is_active(self):
-        return True
+        return self["activated"]
 
     def is_anonymous(self):
         return False
@@ -119,12 +101,15 @@ class User(Document):
 
 def create_user(attributes):
     new_user = Users.User()
-    attributes['password'] = Auth.hash_password(attributes['password'])
-    attributes['email'] = attributes['email'].lower()
+    attributes = prepare(attributes)
+
     utils.mergeFrom(attributes, new_user, User.required_fields)
+
     optional = User.basic_info_fields.difference(User.required_fields)
     optional.remove('_id')
+
     utils.mergeFrom(attributes, new_user, optional, require=False)
+
     new_user.save()
 
     # give them a few invites
@@ -219,10 +204,6 @@ def get_user_details(user, me=False):
         output['initialization'] = user.get('initialization')
 
     return jsonify(output)
-    '''fields = list(User.details)
-    conn_type = connection_type(user)
-    return utils.jsonFields(user, fields, response = True, extra = { 'connectionType' : conn_type })'''
-
 
 
 ## Normalizes userid to ObjectId

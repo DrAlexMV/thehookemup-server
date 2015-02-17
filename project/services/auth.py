@@ -5,15 +5,16 @@ from flask.ext.bcrypt import Bcrypt
 from flask.ext.api.status import HTTP_401_UNAUTHORIZED
 from project.services.database import Database
 from project.services.social_signin import SocialSignin
+from project.strings import resource_strings
 from bson.objectid import ObjectId
 from functools import wraps
 
 
 class Auth:
-    GHOST = 1
-    USER = 2
-    ADMIN = 3
-    SUPER_ADMIN = 4
+    GHOST = 0
+    USER = 1
+    ADMIN = 2
+    SUPER_ADMIN = 3
 
     class Anonymous(AnonymousUserMixin):
         def __init__(self):
@@ -64,7 +65,8 @@ class Auth:
     def login(self, user_object, password):
         if user_object is not None:
             if self.__bcrypt.check_password_hash(user_object['password'], password):
-                login_user(user_object)
+                if not login_user(user_object):
+                    return resource_strings["USER_NOT_ACTIVATED"]
             else:
                 return 'Invalid password'
         else:

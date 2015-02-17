@@ -47,6 +47,9 @@ class BaseUser(Document):
     def get_access_level(self):
         return self["permissionLevel"]
 
+    def is_active(self):
+        return self["permissionLevel"] > Auth.GHOST
+
     def is_authenticated(self):
         return True
 

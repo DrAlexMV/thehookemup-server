@@ -89,8 +89,8 @@ def add_or_pass(endorser_endorsements, entity):
 
 
 def endorse_entity(entity_id, entity_type):
-    entity_id = ObjectId(entity_id)
-    user_id = ObjectId(getUserID('me'))
+    entity_id = getUserID(entity_id)
+    user_id = getUserID('me')
 
     if entity_id == user_id:
         raise Exception('Cannot endorse self')

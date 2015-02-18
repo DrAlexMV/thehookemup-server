@@ -7,7 +7,7 @@ class Database:
         self.config = {}
 
     def connect(self, config):
-        print 'Connecting to mongodb at: %s %i' % (config['MONGODB_HOST'], config['MONGODB_PORT'])
+        print 'Connecting to mongodb at: %s %i, using database "%s"' % (config['MONGODB_HOST'], config['MONGODB_PORT'], config['DATABASE_NAME'])
         self.__connection = mongokit.Connection(config['MONGODB_HOST'], config['MONGODB_PORT'])
         self.config = config
 

@@ -5,7 +5,7 @@ from models.user import getUserID, findUserByID, get_basic_info_with_security, g
 from models.startup import find_startup_by_id, get_basic_startup, get_basic_startups_from_ids
 from itertools import groupby
 from mongokit.paginator import Paginator
-from project import config
+from project.config import config
 
 Endorsements = Database['Endorsements']
 connection = Database.connection()

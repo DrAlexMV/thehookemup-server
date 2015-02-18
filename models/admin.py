@@ -2,7 +2,8 @@ from bson import ObjectId
 from flask_login import current_user
 from flask_mongokit import Document
 from models.user import findMultipleUsers, findUserByID
-from project import config, Database
+from project.services.database import Database
+from project.config import config
 from project.services.auth import Auth
 
 connection = Database.connection()

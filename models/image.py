@@ -1,6 +1,6 @@
 from mongokit import Document
 from project.services.database import Database
-from project import config
+from project.config import config
 import bson
 import datetime
 from bson.objectid import ObjectId

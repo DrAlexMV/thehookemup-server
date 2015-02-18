@@ -1,4 +1,5 @@
-from project import database_wrapper, config
+from project import database_wrapper
+from project.config import config
 from bson.objectid import ObjectId
 from project.services.database import Database
 from mongokit import Document

@@ -1,6 +1,6 @@
 import urllib
 import tornado.escape
-from project import config
+from project.config import config
 
 FACEBOOK_VALIDATE_SITE = 'https://graph.facebook.com'
 FACEBOOK_VALIDATE_PATH = '/debug_token'

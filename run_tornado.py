@@ -2,7 +2,7 @@ from tornado.wsgi import WSGIContainer
 from tornado.httpserver import HTTPServer
 from tornado.ioloop import IOLoop
 from tornado import autoreload
-from project import app, config
+from project.server import app, config
 import sys
 
 http_server = HTTPServer(WSGIContainer(app))

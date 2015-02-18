@@ -1,7 +1,8 @@
 from mongokit import Document
 import datetime
 from models.base_user import BaseUser, prepare
-from project import utils, config
+from project import utils
+from project.config import config
 from project import database_wrapper
 from models import invite
 from bson.objectid import ObjectId

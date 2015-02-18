@@ -1,6 +1,7 @@
 from mongokit import Document
 from project.services.database import Database
-from project import utils, config
+from project import utils
+from project.config import config
 from bson.objectid import ObjectId
 from bson import uuid
 
@@ -23,7 +24,7 @@ class Invite(Document):
         'scratchedOut': False
     }
 
-    required_fields = ['producerObjectId', 'code']
+    required_fields = ['code']
 
     basic_fields = {'_id', 'code', 'producerObjectId', 'consumerObjectId', 'scratchedOut'}
 

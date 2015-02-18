@@ -1,7 +1,7 @@
 from bson.objectid import ObjectId
 from project.services.database import Database
 from mongokit import Document
-from project import config
+from project.config import config
 
 connection = Database.connection()
 SocialSignins = Database['SocialSignins']

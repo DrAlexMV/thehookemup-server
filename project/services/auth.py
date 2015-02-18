@@ -38,8 +38,10 @@ class Auth:
                 return None
 
             Users = Database['Users']
-
-            return Users.User.find_one({'_id': ObjectId(user_id)})
+            try:
+                return Users.User.find_one({'_id': ObjectId(user_id)})
+            except:
+                return None
 
         def unauthorized():
             return jsonify(error='Unauthorized'), HTTP_401_UNAUTHORIZED

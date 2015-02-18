@@ -19,7 +19,6 @@ def login():
         return '', HTTP_400_BAD_REQUEST
 
     user_object = user.findSingleUser({'email': email})
-    print user_object
     error = Auth.login(user_object, password_hash)
     if error:
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
@@ -57,7 +56,7 @@ def signup():
                 raise Exception("Invalid invite code")
             new_user = user.create_user(req)
             database_wrapper.save_entity(new_user)
-            invite.consume(invite_code, str(new_user['_id']))
+            invite.consume(invite_code, new_user['_id'])
             print Auth.login(new_user, password), new_user, password
             #TODO: The issue is that get_basic_info_with_security which was
             #here before relies on the current_user field which is now not set

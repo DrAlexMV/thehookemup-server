@@ -96,7 +96,7 @@ def create_user(attributes):
 
     # give them a few invites
     for i in range(config['NEW_USER_INVITE_NUM']):
-        invite.create_invite(str(new_user['_id']))
+        invite.create_invite(new_user['_id'])
     return new_user
 
 
@@ -375,4 +375,3 @@ def get_basic_info_from_ids(user_ids, keep_order=False):
         return get_basic_info_from_users(sorted_queried)
 
     return get_basic_info_from_users(queried)
-

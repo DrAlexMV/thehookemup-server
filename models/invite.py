@@ -13,8 +13,8 @@ class Invite(Document):
     __collection__ = 'Invites'
     __database__ = config['DATABASE_NAME']
     structure = {
-        'producerObjectId': basestring,
-        'consumerObjectId': basestring,
+        'producerObjectId': ObjectId,
+        'consumerObjectId': ObjectId,
         'code': basestring,
         'scratchedOut': bool
     }
@@ -49,8 +49,8 @@ def find_invite(map_attributes):
     return Invites.Invite.find_one(map_attributes)
 
 
-def find_multiple_invites(mapAttributes):
-    return Invites.Invite.find(mapAttributes)
+def find_multiple_invites(map_attributes):
+    return Invites.Invite.find(map_attributes)
 
 
 def find_invite_by_code(invite_code):
@@ -75,6 +75,7 @@ def put_invite(invite_id, fields):
     entry = find_invite_by_id(invite_id)
     entry['scratchedOut'] = fields['scratchedOut']
     entry.save()
+
 
 def is_valid(invite_code):
     invite = find_invite_by_code(invite_code)

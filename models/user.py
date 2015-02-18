@@ -46,7 +46,7 @@ class User(BaseUser):
                              'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
         },
-        'is_active':bool,
+
         'handles': [{'type': basestring, 'url': basestring}]
 
     }
@@ -73,7 +73,6 @@ class User(BaseUser):
 
     default_values = {
         'dateJoined': datetime.datetime.utcnow,
-        'is_active':True
     }
 
     use_dot_notation = True
@@ -352,7 +351,7 @@ def get_basic_info_with_security(userObject): # O(N)
     return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
 
 def get_handles(user):
-    return utils.jsonFields(user, 'handles', response='true')
+    return utils.jsonFields(user, ['handles'], response='true')
 
 def get_basic_info_from_users(users):
     basic_users = []

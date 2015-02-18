@@ -257,7 +257,6 @@ def put_handles(user_id):
 
 @blueprint.route('/users/<user_id>/handles', methods=['GET'])
 @Auth.require(Auth.USER)
-@Auth.only_me
 def get_handles(user_id):
     """
     Example request:

@@ -19,6 +19,7 @@ def login():
         return '', HTTP_400_BAD_REQUEST
 
     user_object = user.findSingleUser({'email': email})
+    print user_object
     error = Auth.login(user_object, password_hash)
     if error:
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
@@ -46,17 +47,28 @@ def signup():
     req = request.json
     password = req['password']
     request_email = req['email'].lower()
+
     entry = user.findSingleUser({'email': request_email})
+
     if entry is None:
         try:
             invite_code = req['invite']
+            if not invite.is_valid(invite_code):
+                raise Exception("Invalid invite code")
             new_user = user.create_user(req)
             database_wrapper.save_entity(new_user)
-            invite.consume(invite_code, new_user['_id'])
+            invite.consume(invite_code, str(new_user['_id']))
             print Auth.login(new_user, password), new_user, password
+            #TODO: The issue is that get_basic_info_with_security which was
+            #here before relies on the current_user field which is now not set
+            #since there is no user logged in. Using the following method is a
+            #temporary workaround.. Really a lot of this stuff needs refactoring
+            #so I'm not going to write another get_basic_info method.
+            basic_info = user.get_basic_info_from_users([new_user])[0]
         except Exception as e:
             return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        return user.get_basic_info_with_security(new_user)
+        #TODO:
+        return jsonify(basic_info)
     else:
         error = 'Email is already in use'
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST

@@ -45,6 +45,7 @@ class User(BaseUser):
                              'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
         },
+        'is_active':bool,
         'handles': [{'type': basestring, 'url': basestring}]
 
     }
@@ -70,7 +71,8 @@ class User(BaseUser):
     }
 
     default_values = {
-        'dateJoined': datetime.datetime.utcnow
+        'dateJoined': datetime.datetime.utcnow,
+        'is_active':True
     }
 
     use_dot_notation = True
@@ -94,7 +96,7 @@ def create_user(attributes):
 
     # give them a few invites
     for i in range(config['NEW_USER_INVITE_NUM']):
-        invite.create_invite(new_user['_id'])
+        invite.create_invite(str(new_user['_id']))
     return new_user
 
 
@@ -244,6 +246,7 @@ def get_connection(this_user, other_user_id):
         if conn['user'] == other_user_id:
             return conn
     return None
+
 
 def connection_type(other_user):
     me = findUserByID('me')

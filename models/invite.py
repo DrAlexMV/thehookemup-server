@@ -13,8 +13,8 @@ class Invite(Document):
     __collection__ = 'Invites'
     __database__ = config['DATABASE_NAME']
     structure = {
-        'producerObjectId': ObjectId,
-        'consumerObjectId': ObjectId,
+        'producerObjectId': basestring,
+        'consumerObjectId': basestring,
         'code': basestring,
         'scratchedOut': bool
     }
@@ -75,3 +75,12 @@ def put_invite(invite_id, fields):
     entry = find_invite_by_id(invite_id)
     entry['scratchedOut'] = fields['scratchedOut']
     entry.save()
+
+def is_valid(invite_code):
+    invite = find_invite_by_code(invite_code)
+    if invite is None:
+        return False
+    elif invite.consumerObjectId is not None:
+        return False
+    else:
+        return True

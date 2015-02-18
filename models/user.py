@@ -44,7 +44,8 @@ class User(BaseUser):
             'connections': [{'user': basestring, 'type': basestring, 'message': basestring,
                              'date': datetime.datetime}],  # date when request was sent
             'associations': [basestring]
-        }
+        },
+        'handles': [{'type': basestring, 'url': basestring}]
 
     }
 
@@ -156,6 +157,12 @@ def put_projects(user, req):
     return True
 
 
+def put_handles(user, req):
+    handles = req.get('handles')
+    user.handles = handles
+    database_wrapper.save_entity(user)
+    return True
+
 def set_initialization_level(user, initialization_level):
     user['initialization'] = initialization_level
     database_wrapper.save_entity(user)
@@ -200,22 +207,26 @@ def findUserByID(userid):
     entry = Users.User.find_one({'_id': uid})
     return entry
 
+
 def findSingleUser(mapAttributes):
     entry = Users.User.find_one(mapAttributes)
     return entry
 
-#
+
 def findMultipleUsers(mapAttributes):
     entries = Users.User.find(mapAttributes)
     return entries
+
 
 def get_connections(this_user):
     connected = User.connection_types['CONNECTED']
     return [conn['user'] for conn in this_user['edges']['connections'] if conn['type'] == connected]
 
+
 def get_pending_connections(this_user):
     pending = User.connection_types['PENDING_APPROVAL']
     return [conn for conn in this_user['edges']['connections'] if conn['type'] == pending]
+
 
 ## TODO: Adapt to make less silly. Right now it basically just gets 5 people not in your edges.connections
 ## Notes: this returns objects rather than ids
@@ -336,6 +347,8 @@ def get_basic_info_with_security(userObject): # O(N)
 
     return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
 
+def get_handles(user):
+    return utils.jsonFields(user, 'handles', response='true')
 
 def get_basic_info_from_users(users):
     basic_users = []
@@ -359,3 +372,4 @@ def get_basic_info_from_ids(user_ids, keep_order=False):
         return get_basic_info_from_users(sorted_queried)
 
     return get_basic_info_from_users(queried)
+

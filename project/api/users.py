@@ -229,3 +229,47 @@ def remove_connection_route(user_id, connection_id):
         return '{}', HTTP_200_OK
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
+
+
+@blueprint.route('/users/<user_id>/handles', methods=['PUT'])
+@Auth.require(Auth.USER)
+@Auth.only_me
+def put_handles(user_id):
+    """
+    Example request:
+
+    PUT
+    {
+        "handles":[{"type":"facebook","url":"www.facebook.com/1234"}]
+    }
+    returns status 200_OK when successful
+    """
+    req = request.get_json()
+    entry = user.findUserByID(user_id)
+    print entry
+    if entry is None:
+        return '', HTTP_404_NOT_FOUND
+    print 'here'
+    if user.put_handles(entry, req):
+        return '', HTTP_200_OK
+    else:
+        return '', HTTP_400_BAD_REQUEST
+
+@blueprint.route('/users/<user_id>/handles', methods=['GET'])
+@Auth.require(Auth.USER)
+@Auth.only_me
+def get_handles(user_id):
+    """
+    Example request:
+
+    GET /users/<user_id>/handles
+    returns:
+    {
+        "handles":[{"type":"facebook","url":"www.facebook.com/1234"},{"type":"linkedin","url":"www.linkedin.com"}]
+    }
+    returns status 200_OK when successful
+    """
+    entry = user.findUserByID(user_id)
+    if entry is None:
+        return '', HTTP_404_NOT_FOUND
+    return user.get_handles(entry)

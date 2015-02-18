@@ -62,7 +62,8 @@ class User(BaseUser):
         'major',
         'university',
         'description',
-        'picture'
+        'picture',
+        'handles'
     }
 
     details = {
@@ -158,12 +159,6 @@ def put_projects(user, req):
     database_wrapper.save_entity(user)
     return True
 
-
-def put_handles(user, req):
-    handles = req.get('handles')
-    user.handles = handles
-    database_wrapper.save_entity(user)
-    return True
 
 def set_initialization_level(user, initialization_level):
     user['initialization'] = initialization_level
@@ -350,8 +345,6 @@ def get_basic_info_with_security(userObject): # O(N)
 
     return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
 
-def get_handles(user):
-    return utils.jsonFields(user, ['handles'], response='true')
 
 def get_basic_info_from_users(users):
     basic_users = []

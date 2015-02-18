@@ -1,5 +1,5 @@
 from flask import request, jsonify, Blueprint
-from project.services.auth import Auth, current_user
+from project.services.auth import Auth, current_user, SocialSignin
 from models import user, invite
 from flask_api.status import HTTP_400_BAD_REQUEST
 from project import database_wrapper
@@ -29,7 +29,7 @@ def login():
 def login_social():
     req = request.json
     try:
-        social_type = req['social_type']
+        social_type = req['socialType']
         token = req['token']
     except:
         return '', HTTP_400_BAD_REQUEST
@@ -78,3 +78,17 @@ def signup():
 def logout():
     Auth.logout()
     return jsonify(LoggedIn=False, error=None)
+
+
+@blueprint.route('/attach-social-login', methods=['POST'])
+@Auth.require(Auth.GHOST)
+def attach_social_login():
+    req = request.json
+    try:
+        social_type = req['socialType']
+        token = req['token']
+    except:
+        return '', HTTP_400_BAD_REQUEST
+
+    SocialSignin.attach(current_user['_id'], social_type, token)
+    return jsonify(error=None)

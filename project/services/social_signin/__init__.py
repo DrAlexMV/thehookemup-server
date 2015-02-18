@@ -20,4 +20,7 @@ class SocialSignin:
 
     verifiers = {'facebook': facebook.verify}
 
+    def attach(self, user_id, social_type, social_id):
+        social_signins.attach_social_id_to_user(user_id, social_type, social_id)
+
 SocialSignin = SocialSignin()

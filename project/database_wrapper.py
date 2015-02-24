@@ -28,6 +28,9 @@ def save_entity(entity):
     elif type(entity).__name__ == 'Startup':
         save_startup(entity)
 
+    elif type(entity).__name__ == 'Market':
+        save_market(entity)
+
     else:
         raise Exception('Unable to save type of ', type(entity))
 
@@ -46,6 +49,12 @@ def remove_skill(skill):
                         str(config['ELASTIC_PORT']) + '/'+config['DATABASE_NAME']+'-skills/skill/'+obj_id, headers=headers)
     skill.delete()
 
+def remove_market(market):
+    obj_id = str(market._id)
+    headers = {'content-type': 'application/json'}
+    r = requests.delete("http://"+config['ELASTIC_HOST'] + ':' +
+                        str(config['ELASTIC_PORT']) + '/'+config['DATABASE_NAME']+'-markets/market/'+obj_id, headers=headers)
+    market.delete()
 
 #TODO: Clean this up, use params from project instead of hardcoding
 def save_skill(skill):
@@ -55,6 +64,16 @@ def save_skill(skill):
     r = requests.delete('http://'+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+'/'+config['DATABASE_NAME']+'-skills/skill/'+obj_id, headers=headers)
     searchable_entity = create_simple_skillJSON(skill)
     r = requests.put('http://'+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+'/'+config['DATABASE_NAME']+'-skills/skill/'+obj_id, data=json.dumps(searchable_entity), headers=headers)
+
+
+def save_market(market):
+    market.save()
+    obj_id = str(market._id)
+    headers = {'content-type': 'application/json'}
+    r = requests.delete('http://'+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+'/'+config['DATABASE_NAME']+'-markets/market/'+obj_id, headers=headers)
+    searchable_entity = create_simple_marketJSON(market)
+    r = requests.put('http://'+config['ELASTIC_HOST']+':'+str(config['ELASTIC_PORT'])+'/'+config['DATABASE_NAME']+'-markets/market/'+obj_id, data=json.dumps(searchable_entity), headers=headers)
+
 
 
 def save_to_elastic(entity, doc_type, body_to_save):
@@ -115,6 +134,19 @@ def create_simple_skillJSON(skill_entity):
     }
     #print skill_entity.occurrences
     return searchable_skill
+
+
+def create_simple_marketJSON(market_entity):
+    searchable_market = {
+        "name": market_entity.name,
+        "occurrences":market_entity.occurrences,
+        "name_suggest" : {
+            "input":[market_entity.name],
+            "output":market_entity.name,
+            "weight":market_entity.occurrences
+        }
+    }
+    return searchable_market
 
 
 #remove a mapping from the database, also removes all associated data

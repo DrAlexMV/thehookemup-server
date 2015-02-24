@@ -120,6 +120,21 @@ def get_autocomplete_skills(text, num_results):
     res = requests.post('http://localhost:9200/'+config['DATABASE_NAME']+ '-skills/_suggest', data=json.dumps(query), headers=headers)
     return res.json()['skills'][0]['options']
 
+
+def get_autocomplete_markets(text, num_results):
+    query = {
+    "markets" : {
+        "text" : text,
+        "completion" : {
+            "field" : "name_suggest",
+            "size": num_results
+            }
+        }
+    }
+    headers = {'content-type': 'application/json'}
+    res = requests.post('http://localhost:9200/'+config['DATABASE_NAME']+ '-markets/_suggest', data=json.dumps(query), headers=headers)
+    return res.json()['markets'][0]['options']
+
 def simple_search_skills(text, num_results):
 
     if text=='' or text==None:

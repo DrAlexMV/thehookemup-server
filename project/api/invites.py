@@ -56,7 +56,6 @@ def validate_invite(invite_code):
     Indicates whether or not a code is valid
     '''
     try:
-        return jsonify(error=None, status = True)
         invite_entry = invite.find_invite_by_code(invite_code)
         if invite_entry is None:
             raise Exception('Code not found')

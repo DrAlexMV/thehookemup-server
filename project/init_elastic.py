@@ -10,7 +10,8 @@ def startup_mapping():
             "properties": {
                 "name": {"type": "string"},
                 "website": {"type": "string"},
-                "description": {"type": "string"}
+                "description": {"type": "string"},
+                "markets": {"type": "string"}
             }
         }
     }
@@ -57,7 +58,6 @@ def generate_search_structure(es):
 
     es.indices.put_mapping(index=config['DATABASE_NAME'], doc_type='Startup', body=startup_mapping())
 
-    #TODO replace hardcoded params
     #stupid elasticpy doesn't seem to support suggestions
     payload = {
         "mappings": {
@@ -77,3 +77,25 @@ def generate_search_structure(es):
     headers = {'content-type': 'application/json'}
     r = requests.put("http://" + config['ELASTIC_HOST'] + ':' + str(config['ELASTIC_PORT']) + "/" +config['DATABASE_NAME']+"-skills",
                      data=json.dumps(payload), headers=headers)
+
+
+    
+    #stupid elasticpy doesn't seem to support suggestions
+    payload = {
+        "mappings": {
+            "market": {
+                "properties": {
+                    "name": {"type": "string"},
+                    "occurrences": {"type": "integer"},
+                    "name_suggest": {
+                        "type": "completion"
+                    }
+                }
+            }
+
+        }
+    }
+    headers = {'content-type': 'application/json'}
+    r = requests.put("http://" + config['ELASTIC_HOST'] + ':' + str(config['ELASTIC_PORT']) + "/" +config['DATABASE_NAME']+"-markets",
+                     data=json.dumps(payload), headers=headers)
+

@@ -52,11 +52,11 @@ def signup():
     if entry is None:
         try:
             invite_code = req['invite']
-            if not invite.is_valid(invite_code):
-                raise Exception("Invalid invite code")
+            #if not invite.is_valid(invite_code):
+             #   raise Exception("Invalid invite code")
             new_user = user.create_user(req)
             database_wrapper.save_entity(new_user)
-            invite.consume(invite_code, new_user['_id'])
+            #invite.consume(invite_code, new_user['_id'])
             print Auth.login(new_user, password), new_user, password
             #TODO: The issue is that get_basic_info_with_security which was
             #here before relies on the current_user field which is now not set

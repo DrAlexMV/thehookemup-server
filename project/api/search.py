@@ -110,6 +110,44 @@ def autocomplete_skill():
         return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
 
+@blueprint.route('/search/autocomplete/markets', methods=['GET'])
+@Auth.require(Auth.USER)
+def autocomplete_market():
+    """
+    Example:
+
+    GET http://localhost:5000/api/v1/search/autocomplete/skills?text=jav&results=2
+
+    returns:
+
+    {
+        "error": null,
+        "results": [{
+            "score" : 10,
+            "text" : "Java"
+        },
+            "score" : 2,
+            "text" : "Javascript"
+        }]
+    }
+
+    Where score is the number of users who have put that skill on their profile. Results are ordered by occurrence.
+    In this case, both Java and Javascript match the text "jav" and java has 10 active users who list it as a skill
+    and javascript has 2 active users who list it as a skill.
+
+    """
+    error = None
+
+    try:
+        num_results = request.args.get('results')
+        text_to_search = request.args.get('text')
+
+        return jsonify(results=search_functions.get_autocomplete_markets(text_to_search, num_results),error=None)
+
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
+
+        
 @blueprint.route('/search/skills', methods=['GET'])
 @Auth.require(Auth.USER)
 def search_skills():

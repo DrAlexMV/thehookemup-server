@@ -18,10 +18,6 @@ class Market(Document):
     }
     required_fields = ['name', 'occurrences']
 
-    '''default_values = {
-        'occurrences': 1
-    }'''
-
     use_dot_notation = True
 
     def __repr__(self):
@@ -29,7 +25,6 @@ class Market(Document):
 
 
 def create_market(name, occurrences):
-    print("In create market")
     market = Markets.Market()
     market['name'] = name
     market['occurrences'] = occurrences

@@ -58,6 +58,6 @@ def elevate_admin_to_super_admin(admin_id):
 
 
 def find_unactivated_users():
-    return [basic_user_with_email(user) for user in findMultipleUsers({"activated": False})]
+    return [basic_user_with_email(user) for user in findMultipleUsers({"permissionLevel": Auth.GHOST})]
 
 

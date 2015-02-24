@@ -38,6 +38,8 @@ def save_entity(entity):
 def remove_entity(entity):
     if type(entity).__name__ == 'Skill':
         remove_skill(entity)
+    if type(entity).__name__ == 'Market':
+        remove_market(entity)
     else:
         raise Exception('Unable to remove type of ', type(entity))
 
@@ -56,7 +58,7 @@ def remove_market(market):
                         str(config['ELASTIC_PORT']) + '/'+config['DATABASE_NAME']+'-markets/market/'+obj_id, headers=headers)
     market.delete()
 
-#TODO: Clean this up, use params from project instead of hardcoding
+
 def save_skill(skill):
     skill.save()
     obj_id = str(skill._id)
@@ -132,7 +134,6 @@ def create_simple_skillJSON(skill_entity):
             "weight":skill_entity.occurrences
         }
     }
-    #print skill_entity.occurrences
     return searchable_skill
 
 
@@ -160,7 +161,6 @@ def load_database_to_elastic():
     for user in db_entries:
         try:
             save_user(user)
-            print 'saved successfully'
         except Exception as e:
             print str(e)
             continue

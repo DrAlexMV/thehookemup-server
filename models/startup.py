@@ -125,10 +125,8 @@ def create_startup(user_id, request):
     startup.date = datetime.datetime.utcnow()
     startup.owners.append(str(user_id))
     startup.people.append(str(user_id))
-    print("here before put!!!")
-    #convert the market names in the request into market ids
+    #convert the market names in the request into market ids, increment and decrement occurences accordingly
     put_markets(startup, request)
-    print("here after put")
     optional = Startup.basic_info_fields.difference(Startup.required_fields)
     optional.remove('_id')
     utils.mergeFrom(request, startup, optional, require=False)
@@ -178,7 +176,8 @@ def update_basic_startup(startup_object, request):
     fields.remove('_id')
     utils.mergeFrom(request, startup_object, fields, require=False)
     #put the object ids for all the markets in the request into the startup
-    startup_object['markets']=[market._id for market in get_markets_from_name(startup_object['markets'])]
+    put_markets(startup_object, request)
+   # startup_object['markets']=[market._id for market in get_markets_from_name(request['markets'])]
     database_wrapper.save_entity(startup_object)
     return startup_object
 

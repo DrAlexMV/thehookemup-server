@@ -38,8 +38,8 @@ def create_market(name, occurrences):
 
 
 def find_market_by_id(market_id):
-    # takes a string id
-    market = Markets.Market.find_one({'_id': ObjectId(market_id)})
+    # takes an object id
+    market = Markets.Market.find_one({'_id': market_id})
     return market
 
 

@@ -25,7 +25,7 @@ class Startup(Document):
         'description': basestring,
         'picture': basestring,  # picture mongo id
         'owners': [basestring],  # only one for now, add more later
-        'markets': [basestring],  # ids of markets
+        'markets': [ObjectId],  # ids of markets
         'handles': [{'type': basestring, 'url': basestring}],
         'wall': [{
             'id': basestring,
@@ -69,36 +69,33 @@ class Startup(Document):
         return '<Startup %r>' % (self.name)
 
 def get_markets_from_name(list_of_market_name):
-    print("here in get_markets_from_name")
+    if list_of_market_name is None:
+        return []
     output = []
     for name in list_of_market_name:
         found_market = market.find_market({"name": name})
         if found_market is None:
-            #need to create a new skill
-            print("about to create a market in get_markets_from_name")
+            #need to create a new market
             output.append(market.create_market(name, 0))
         else:
             output.append(found_market)
     return output
 
 def get_markets_from_id(list_of_market_id):
-    print("here in get_markets_from_id")
+    if list_of_market_id is None:
+        return []
     output = []
     for id in list_of_market_id:
-        print("in for loop")
         output.append(market.find_market_by_id(id))
     return output
 
 
 def put_markets(startup,req):
-    print ("in put markets")
     markets = req.get('markets')
     previous_markets_list = get_markets_from_id(startup['markets'])
     put_markets_list = get_markets_from_name(markets)
-    print("after get_markets_from_name")
     removed_markets = set(previous_markets_list).difference(put_markets_list)
     added_markets = set(put_markets_list).difference(previous_markets_list)
-    print("about to for loop")
     for removed_market in removed_markets:
         if removed_market is None:
             #this should never happen
@@ -111,12 +108,9 @@ def put_markets(startup,req):
             #this should never happen
             raise Exception("Something broke.. Added market is None?!")
         else:
-            print("about to increment")
             market.increment_market(added_market)
-
-    startup.markets = [str(put_market._id) for put_market in put_markets_list]
+    startup.markets = [put_market._id for put_market in put_markets_list]
     database_wrapper.save_entity(startup)
-    print('saved startup')
     return True
 
 
@@ -126,15 +120,15 @@ def is_owner(user_id, startup_object):
 
 
 def create_startup(user_id, request):
-    print ("here in create")
     startup = Startups.Startup()
     utils.mergeFrom(request, startup, Startup.required_fields)
     startup.date = datetime.datetime.utcnow()
     startup.owners.append(str(user_id))
     startup.people.append(str(user_id))
-
+    print("here before put!!!")
+    #convert the market names in the request into market ids
     put_markets(startup, request)
-
+    print("here after put")
     optional = Startup.basic_info_fields.difference(Startup.required_fields)
     optional.remove('_id')
     utils.mergeFrom(request, startup, optional, require=False)
@@ -171,22 +165,20 @@ def get_basic_startups_from_ids(startup_ids, keep_order=False):
     return [ get_basic_startup(startup_info) for startup_info in sorted_queried ]
 
 def get_basic_startup(startup_object, current_user_id=None):
-    print(1)
     fields = list(Startup.basic_info_fields)
     current_user_id = current_user_id if current_user_id else user.getUserID('me')
-    print(2)
     owner = {'isOwner': is_owner(current_user_id, startup_object)}
     output = utils.jsonFields(startup_object, fields, response=False, extra=owner)
-    print(3)
+    #append the string names for the markets to the basic info
     output['markets'] = [str(market['name']) for market in get_markets_from_id(startup_object['markets'])]
     return output
 
 def update_basic_startup(startup_object, request):
     fields = list(Startup.basic_info_fields)
     fields.remove('_id')
-
     utils.mergeFrom(request, startup_object, fields, require=False)
-    startup_object['markets']=get_markets_from_name(startup_object['markets'])
+    #put the object ids for all the markets in the request into the startup
+    startup_object['markets']=[market._id for market in get_markets_from_name(startup_object['markets'])]
     database_wrapper.save_entity(startup_object)
     return startup_object
 

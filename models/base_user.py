@@ -1,4 +1,5 @@
 from flask_mongokit import Document
+from project.config import config
 from project.services.auth import Auth
 import copy
 
@@ -64,6 +65,5 @@ def prepare(attributes):
     attributes_copy = copy.deepcopy(attributes)
     attributes_copy['password'] = Auth.hash_password(attributes['password'])
     attributes_copy['email'] = attributes['email'].lower()
-    attributes_copy['permissionLevel'] = Auth.GHOST
+    attributes_copy['permissionLevel'] = Auth.GHOST if config['ENABLE_ACCOUNT_APPROVALS'] else Auth.USER
     return attributes_copy
-

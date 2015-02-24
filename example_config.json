@@ -1,4 +1,5 @@
 {
-  "DATABASE_NAME": "test"
+  "DATABASE_NAME": "test",
+  "ENABLE_ACCOUNT_APPROVALS": false
 }
 

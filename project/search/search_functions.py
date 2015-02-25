@@ -24,8 +24,7 @@ def simple_search_users(query_string, results_per_page, page):
     of user entities that have those keywords in any fields.
     This is to be used when filter params are not specified.
     """
-    if query_string==None:
-        #simple query to get all results
+    if not query_string:
         query = {
             "query": {
                 "match_all": {}
@@ -61,7 +60,7 @@ def filtered_search_users(query_string, json_filter_list, results_per_page, page
     #if the query string is blank, just search based on the filters
     #currently unused since we don't support empty string queries
 
-    if query_string==None:
+    if not query_string:
 
         query = {
             "query":{
@@ -137,7 +136,7 @@ def get_autocomplete_markets(text, num_results):
 
 def simple_search_skills(text, num_results):
 
-    if text=='' or text==None:
+    if not text:
         query = {
             "sort" : [{
                 "occurrences": {

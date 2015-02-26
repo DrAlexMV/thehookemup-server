@@ -57,7 +57,6 @@ def signup():
             new_user = user.create_user(req)
             database_wrapper.save_entity(new_user)
             invite.consume(invite_code, new_user['_id'])
-            print Auth.login(new_user, password), new_user, password
             #TODO: The issue is that get_basic_info_with_security which was
             #here before relies on the current_user field which is now not set
             #since there is no user logged in. Using the following method is a

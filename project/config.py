@@ -20,6 +20,7 @@ config['FB_SIGNIN_APPSECRET'] = 'd12045378fed762da38f9a882f727828'
 
 config['ENABLE_ACCOUNT_APPROVALS'] = True
 config['NEW_USER_INVITE_NUM'] = 3
+config['INVITE_CODE_LENGTH'] = 10
 
 # Load config file if there is one
 config_file = os.environ.get('CONFIG_FILE')

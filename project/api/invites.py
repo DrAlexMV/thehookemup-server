@@ -14,6 +14,7 @@ blueprint = Blueprint(
     'invites', __name__
 )
 
+
 @blueprint.route('/invites', methods=['GET'])
 @Auth.require(Auth.USER)
 def get_invites():
@@ -25,13 +26,15 @@ def get_invites():
     invite_attributes_list = [invite.get_invite_attributes(entry) for entry in entries]
     return jsonify(error=None, invites=invite_attributes_list)
 
+
 @blueprint.route('/invites/<invite_id>', methods=['PUT'])
 @Auth.require(Auth.USER)
 def put_invite(invite_id):
     invite.put_invite(invite_id, request.get_json())
     return jsonify(error=None)
 
-## This endpoint needs to be removed before release
+
+# This endpoint needs to be removed before release
 @blueprint.route('/invites/create', methods=['POST'])
 @Auth.require(Auth.USER)
 def create_invites():
@@ -50,19 +53,10 @@ def create_invites():
     except Exception as e:
         return jsonify(error=str(e))
 
+
 @blueprint.route('/invites/validate/<invite_code>', methods=['GET'])
 def validate_invite(invite_code):
-    '''
-    Indicates whether or not a code is valid
-    '''
-    try:
-        invite_entry = invite.find_invite_by_code(invite_code)
-        if invite_entry is None:
-            raise Exception('Code not found')
-        if invite_entry.consumerObjectId is not None:
-            raise Exception('Code already used')
-
-    except Exception as e:
+    if invite.is_valid(invite_code):
+        return jsonify(error=None, status=True)
+    else:
         return jsonify(error='Invalid Code', status=False), HTTP_400_BAD_REQUEST
-
-    return jsonify(error=None, status = True)

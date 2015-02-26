@@ -3,7 +3,7 @@ from project.services.database import Database
 from project import utils
 from project.config import config
 from bson.objectid import ObjectId
-from bson import uuid
+import random
 
 Invites = Database['Invites']
 connection = Database.connection()
@@ -34,10 +34,14 @@ class Invite(Document):
         return '<Invite %r>' % str(self['producerObjectId'])
 
 
+def generate_code(length):
+    return ''.join([random.choice('0123456789abcdef') for x in range(length)])
+
+
 def create_invite(producer_object_id):
     invite = Invites.Invite()
     invite['producerObjectId'] = producer_object_id
-    invite['code'] = str(uuid.uuid4().hex)[12:]
+    invite['code'] = generate_code(config['INVITE_CODE_LENGTH'])
     invite.save()
     return invite
 
@@ -54,8 +58,8 @@ def find_multiple_invites(map_attributes):
     return Invites.Invite.find(map_attributes)
 
 
-def find_invite_by_code(invite_code):
-    return find_invite({'code': invite_code})
+def find_free_invite_by_code(invite_code):
+    return find_invite({'code': invite_code, 'consumerObjectId': None})
 
 
 def find_invite_by_id(invite_id):
@@ -63,7 +67,7 @@ def find_invite_by_id(invite_id):
 
 
 def consume(invite_code, consumer_object_id):
-    entry = find_invite_by_code(invite_code)
+    entry = find_free_invite_by_code(invite_code)
     if entry is None:
         raise Exception('Invalid code')
     if entry['consumerObjectId'] is not None:
@@ -79,10 +83,4 @@ def put_invite(invite_id, fields):
 
 
 def is_valid(invite_code):
-    invite = find_invite_by_code(invite_code)
-    if invite is None:
-        return False
-    elif invite.consumerObjectId is not None:
-        return False
-    else:
-        return True
+    return bool(find_free_invite_by_code(invite_code))

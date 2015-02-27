@@ -44,32 +44,29 @@ def login_social():
 def signup():
     error = None
     req = request.json
-    password = req['password']
     request_email = req['email'].lower()
-
+    password = req['password']
     entry = user.findSingleUser({'email': request_email})
 
-    if entry is None:
-        try:
-            invite_code = req['invite']
-            if not invite.is_valid(invite_code):
-                raise Exception("Invalid invite code")
-            new_user = user.create_user(req)
-            database_wrapper.save_entity(new_user)
-            invite.consume(invite_code, new_user['_id'])
-            #TODO: The issue is that get_basic_info_with_security which was
-            #here before relies on the current_user field which is now not set
-            #since there is no user logged in. Using the following method is a
-            #temporary workaround.. Really a lot of this stuff needs refactoring
-            #so I'm not going to write another get_basic_info method.
-            basic_info = user.get_basic_info_from_users([new_user])[0]
-        except Exception as e:
-            return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
-        #TODO:
-        return jsonify(basic_info)
-    else:
+    if entry is not None:
         error = 'Email is already in use'
         return jsonify(LoggedIn=False, error=error), HTTP_400_BAD_REQUEST
+    try:
+        invite_code = req['invite']
+        if not invite.is_valid(invite_code):
+            raise Exception("Invalid invite code")
+        new_user = user.create_user(req)
+        if (new_user is None):
+            raise Exception()
+
+        database_wrapper.save_entity(new_user)
+        invite.consume(invite_code, new_user['_id'])
+
+        # We need to log in the just-registered user.
+        status = Auth.login(new_user, password)
+        return jsonify(user.get_basic_info_from_users([new_user])[0])
+    except Exception as e:
+        return jsonify(error=str(e)), HTTP_400_BAD_REQUEST
 
 
 @blueprint.route('/logout', methods=['GET'])

@@ -36,15 +36,20 @@ def put_invite(invite_id):
 
 # This endpoint needs to be removed before release
 @blueprint.route('/invites/create', methods=['POST'])
-@Auth.require(Auth.USER)
+@Auth.require(Auth.ADMIN)
 def create_invites():
     '''
-    Create <number> of invites for the currently logged in user.
+    Create <number> of invites for a target user
+    (or by default the currently logged in user).
     '''
 
     try:
         user_id = user.getUserID('me')
+        if request.get_json().get('user'):
+            user_id = ObjectId(request.get_json().get('user'))
+
         number = int(request.get_json()['number'])
+
         output_invites = []
         for i in range(number):
             output_invite = invite.create_invite(user_id)

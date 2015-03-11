@@ -38,7 +38,7 @@ def save_entity(entity):
 def remove_entity(entity):
     if type(entity).__name__ == 'Skill':
         remove_skill(entity)
-    if type(entity).__name__ == 'Market':
+    elif type(entity).__name__ == 'Market':
         remove_market(entity)
     else:
         raise Exception('Unable to remove type of ', type(entity))

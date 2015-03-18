@@ -221,4 +221,3 @@ def remove_connection_route(user_id, connection_id):
         return '{}', HTTP_200_OK
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
-

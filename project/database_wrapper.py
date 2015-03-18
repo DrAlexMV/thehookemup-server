@@ -99,7 +99,7 @@ def save_startup(startup):
 def create_simple_userJSON(user_entity):
     #don't want project dates to be searchable
     for project in user_entity.projects:
-        del project['date']
+        del project['startDate']
         del project['people']
 
     #we want elastic to index users with skills

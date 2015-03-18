@@ -1,4 +1,3 @@
-from mongokit import Document
 import datetime
 from models.base_user import BaseUser, prepare
 from project import utils
@@ -10,7 +9,6 @@ from flask.ext.login import current_user
 from flask import jsonify
 import skill
 from project.services.database import Database
-from project.services.auth import Auth
 
 Users = Database['Users']
 connection = Database.connection()
@@ -34,10 +32,10 @@ class User(BaseUser):
             'description': basestring,
         }],
         'projects': [{
-            'date': basestring,
+            'startDate': basestring,
             'title': basestring,
+            'organization': basestring,
             'description': basestring,
-            'details': [{'title': basestring, 'description': basestring}],
             'people': [basestring]
         }],
         'skills': [basestring], #tags
@@ -120,7 +118,7 @@ def get_skills_from_id(list_of_skill_id):
 
 
 #TODO: clean this shit up
-def put_skills(user,req):
+def put_skills(user, req):
     skills = req.get('skills')
     previous_skills_list = get_skills_from_id(user['skills'])
     put_skills_list = get_skills_from_name(skills)
@@ -131,15 +129,13 @@ def put_skills(user,req):
         if removed_skill is None:
             #this should never happen
             raise Exception("User had reference to skill that doesn't exist")
-        else:
-            skill.decrement_skill(removed_skill)
+        skill.decrement_skill(removed_skill)
 
     for added_skill in added_skills:
         if added_skill is None:
             #this should never happen
             raise Exception("Something broke.. Added skill is None?!")
-        else:
-            skill.increment_skill(added_skill)
+        skill.increment_skill(added_skill)
 
     user.skills = [str(put_skill._id) for put_skill in put_skills_list]
     database_wrapper.save_entity(user)
@@ -163,8 +159,8 @@ def put_projects(user, req):
 #TODO: clean this up, use the details field defined above
 def get_user_details(user, me=False):
     output = {}
-    output['interests']=user['interests']
-    output['skills']=[]
+    output['interests'] = user['interests']
+    output['skills'] = []
     for skill_id in user['skills']:
         output['skills'].append(skill.find_skill_by_id(skill_id)['name'])
     output['projects'] = []
@@ -172,7 +168,7 @@ def get_user_details(user, me=False):
     # annotate with full basic info
     for project in user['projects']:
         p = project.copy()
-        ids =  map(ObjectId, p['people'])
+        ids = map(ObjectId, p['people'])
         p['people'] = get_basic_info_from_ids(ids)
         output['projects'].append(p)
 
@@ -221,8 +217,8 @@ def get_suggested_connections(this_user):
     # do this in two steps since I'm not a Mongo Master
     user_ids = [ObjectId(conn['user']) for conn in this_user.edges.connections]
     user_ids.append(this_user._id)
-    query = {'_id': {'$nin': user_ids}, 'firstName': {'$exists': True }}
-    non_connections = Users.User.find(query, sort = [('picture', -1)], limit = 5)
+    query = {'_id': {'$nin': user_ids}, 'firstName': {'$exists': True}}
+    non_connections = Users.User.find(query, sort=[('picture', -1)], limit=5)
     return non_connections
 
 def get_connection(this_user, other_user_id):
@@ -333,7 +329,7 @@ def get_basic_info_with_security(userObject): # O(N)
     if conn_type == User.connection_types['CONNECTED']:
         fields.append('email')
 
-    return utils.jsonFields(userObject, fields, response = True, extra = { 'connectionType' : conn_type })
+    return utils.jsonFields(userObject, fields, response=True, extra={'connectionType' : conn_type})
 
 
 def get_basic_info_from_users(users):

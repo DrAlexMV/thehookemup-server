@@ -66,14 +66,6 @@ def get_user_details(user_id):
     except Exception as e:
         return jsonify(error=str(e)), HTTP_500_INTERNAL_SERVER_ERROR
 
-@blueprint.route('/users/<user_id>/details/initialization', methods=['PUT'])
-@Auth.require(Auth.USER)
-@Auth.only_me
-def put_initialization(user_id):
-    req = request.get_json()
-    user_object = user.findUserByID(user_id)
-    user.set_initialization_level(user_object, req['initialization'])
-    return jsonify(error='')
 
 @blueprint.route('/users/<user_id>/details/skills', methods=['PUT'])
 @Auth.require(Auth.USER)

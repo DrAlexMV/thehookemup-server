@@ -160,12 +160,6 @@ def put_projects(user, req):
     return True
 
 
-def set_initialization_level(user, initialization_level):
-    user['initialization'] = initialization_level
-    database_wrapper.save_entity(user)
-    return True
-
-
 #TODO: clean this up, use the details field defined above
 def get_user_details(user, me=False):
     output = {}
@@ -181,10 +175,6 @@ def get_user_details(user, me=False):
         ids =  map(ObjectId, p['people'])
         p['people'] = get_basic_info_from_ids(ids)
         output['projects'].append(p)
-
-    # append private fields
-    if me:
-        output['initialization'] = user.get('initialization')
 
     return jsonify(output)
 
